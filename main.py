@@ -7,6 +7,21 @@ import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 
 
+# boundary condition
+def BC(x, y):
+    if x < -1:
+        x = -2 - x
+    else:
+        if x > 1:
+            x = 2 - x
+    if y < -1:
+        y = -2 - y
+    else:
+        if y > 1:
+            y = 2 - y
+    return x, y
+
+
 # for easier setting, I put all the code into a class, developed by York and The Kite
 class CMM3(object):
     def __init__(self):
@@ -36,7 +51,7 @@ class CMM3(object):
         self.x_red = []
         self.y_red = []
 
-    # the func below is extends the classical Euler method, built by York
+    # the func below is extends the classical Euler method
     def Euler_method(self, Xp):
         # create a gauss random dx
         r = gauss(0, 1)
@@ -51,9 +66,13 @@ class CMM3(object):
         for i in range(len(self.x_blue)):
             self.x_blue[i] = self.Euler_method(self.x_blue[i])
             self.y_blue[i] = self.Euler_method(self.y_blue[i])
+            # use the boundary condition above
+            self.x_blue[i], self.y_blue[i] = BC(self.x_blue[i], self.y_blue[i])
         for i in range(len(self.x_red)):
             self.x_red[i] = self.Euler_method(self.x_red[i])
             self.y_red[i] = self.Euler_method(self.y_red[i])
+            # use the boundary condition above
+            self.x_red[i], self.y_red[i] = BC(self.x_red[i], self.y_red[i])
 
     # this func is used to setup the particles in one traverse, built by York
     def setup(self):
@@ -106,7 +125,7 @@ class CMM3(object):
         # show the first grid when t = 0
         self.show()
         # cycle in Classic Euler Method step by step
-        for x in range(int(self.time_max / self.h)):
+        for i in range(int(self.time_max / self.h)):
             self.go_a_step()
             self.show()
 
