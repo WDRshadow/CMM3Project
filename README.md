@@ -8,7 +8,7 @@ To know more about this project, you can watch [lecture7.pdf][1] slide.
 
 The [main.py][2] is our main code. The file contains reference demos written by the team members and other groups.
 
-Be worm! The deadline of this project is **28th Nov**.
+Be warn! The deadline of this project is **28th Nov**.
 
 ---
 
