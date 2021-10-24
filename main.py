@@ -17,14 +17,12 @@ colors = colors1 + colors2 + colors3
 def BC(x, y):
     if x < -1:
         x = -2 - x
-    else:
-        if x > 1:
-            x = 2 - x
+    elif x > 1:
+        x = 2 - x
     if y < -1:
         y = -2 - y
-    else:
-        if y > 1:
-            y = 2 - y
+    elif y > 1:
+        y = 2 - y
     return x, y
 
 
