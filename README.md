@@ -4,9 +4,9 @@
 
 This is a project storage for 2021 Year3 Computational Method and Modeling 3 Group 16 Work in the University of Edinburgh.
 
-To know more about this project, you can watch lecture7.pdf slide.
+To know more about this project, you can watch [lecture7.pdf][1] slide.
 
-The main.py is our main code. The file contains reference demos written by the team members and other groups.
+The [main.py][2] is our main code. The file contains reference demos written by the team members and other groups.
 
 Be worm! The deadline of this project is **28th Nov**.
 
@@ -65,3 +65,5 @@ If you find any place could be improved, please put your Issues or Request on Gi
 
 - York Hsu (Yunhao Xu)
 
+[1]: https://github.com/WDRshadow/CMM3Project/blob/master/lecture7.pdf
+[2]: https://github.com/WDRshadow/CMM3Project/blob/master/main.py

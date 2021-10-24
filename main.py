@@ -32,7 +32,7 @@ class CMM3(object):
         # ----------------------------------------
         # init conditions / interface
         # time set, "h" is a step time
-        self.time_max = 0.4
+        self.time_max = 1
         self.h = 0.05
         # diffusivity
         self.D = 0.01
