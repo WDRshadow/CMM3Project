@@ -5,6 +5,7 @@ from random import gauss
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 import seaborn as sns
+from sys import exit
 
 # the definition of colorbar of gird form
 colors1 = [(r, g, b) for (r, g, b) in zip(np.linspace(1, 0.8, 7), np.linspace(0, 0, 7), np.linspace(0, 0.9, 7))]
@@ -182,7 +183,12 @@ class CMM3(object):
     def main(self):
         print("This is CMM3 group's project of 2D probelms")
         while True:
-            choice = int(input("for particle press 0,for grid press 1,press anything to quit\n"))
+            choice = input("For particle enter 0, for grid enter 1, and if you would like to quit, enter anything else.\n")
+            try:
+                choice = int(choice)
+            except:
+                print("Thanks for using our code.\nQuitting")
+                exit()
             # the visualization of particle form
             if choice == 0:
                 # setup the init list of particles
@@ -212,8 +218,6 @@ class CMM3(object):
                 self.data0 = np.zeros((self.Nx, self.Ny, 2))
                 self.data = np.zeros((self.Nx, self.Ny))
             # quit the project
-            else:
-                return
 
 
 # main code for the whole project
