@@ -29,17 +29,33 @@ class TaskA(object):
         # number of particles
         self.Np = 65536
         # init velocity
-        self.vel_type = 0
+        self.vel_type = 1
         # -----------------------------------------
         # for temp particle position data save
+        # data[0] is the value of red particle, [1] is the value for blue one
         self.x_data = [[], []]
         self.y_data = [[], []]
+        # init velocity field data saver, include x, y and velocity
+        self.vel_field = np.zeros((32, 32, 2))
+
+    # setup the velocity field
+    def velocity_field_setup(self):
+        # input the data from out side
+        vel = np.loadtxt('velocityCMM3.dat')
+        # calculate the length of each field
+        gird_l = (self.x_max - self.x_min) / 32
+        # add the label for every velocity field
+        for i in range(len(vel)):
+            field_x = math.ceil((vel[i][0] - self.x_min) / gird_l) - 1
+            field_y = math.ceil((vel[i][1] - self.y_min) / gird_l) - 1
+            self.vel_field[field_x][field_y][0] = vel[i][2]
+            self.vel_field[field_x][field_y][1] = vel[i][3]
 
     # the func below is the classical Euler method, equation 6
-    def Euler_method(self, Xp):
+    def EX_Euler_method(self, Xp, u):
         # create a gauss random dx, 'r' is random numbers with the standard Gaussian probability
         r = gauss(0, 1)
-        Xp += math.sqrt(2 * self.D) * math.sqrt(self.h) * r
+        Xp += u * self.h + math.sqrt(2 * self.D) * math.sqrt(self.h) * r
         return Xp
 
     # boundary condition
@@ -58,15 +74,20 @@ class TaskA(object):
 
     # this func is used to update the particles after a step time, the movement of each particle is built by York,
     def go_a_step(self):
+        gird_l = (self.x_max - self.x_min) / 32
         for i in range(len(self.x_data)):
             for n in range(len(self.x_data[i])):
-                self.x_data[i][n] = self.Euler_method(self.x_data[i][n])
-                self.y_data[i][n] = self.Euler_method(self.y_data[i][n])
+                # Confirm what field should each particle be in
+                field_x = math.ceil((self.x_data[i][n] - self.x_min) / gird_l) - 1
+                field_y = math.ceil((self.y_data[i][n] - self.y_min) / gird_l) - 1
+                # Use EX Euler method to calculate next position
+                self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], self.vel_field[field_x][field_y][0])
+                self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], self.vel_field[field_x][field_y][1])
                 # use the boundary condition above
                 self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
 
     # this func is used to setup the particles in one traverse, built by York
-    def setup(self):
+    def non_vel_2D_setup(self):
         # use np.random to init the particles
         for i in range(self.Np):
             # temp val for a random particle
@@ -153,7 +174,10 @@ class TaskA(object):
     def main(self):
         print("This is CMM3 group's project of 2D probelms")
         # setup the init list of particles
-        self.setup()
+        self.non_vel_2D_setup()
+        # setup the velocity if vel_type = 1
+        if self.vel_type == 1:
+            self.velocity_field_setup()
         choice = input("For particle enter 0, for grid enter 1, and if you would like to quit, enter anything else.\n")
         try:
             choice = int(choice)
