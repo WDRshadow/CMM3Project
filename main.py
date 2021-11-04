@@ -26,24 +26,20 @@ class TaskA(object):
         # number of axial gridlines and total grids
         self.Nx = 64
         self.Ny = 64
-        self.grids = self.Nx * self.Ny
         # number of particles
         self.Np = 65536
         # init velocity
-        self.vel = 0
+        self.vel_type = 0
         # -----------------------------------------
         # for temp particle position data save
         self.x_data = [[], []]
         self.y_data = [[], []]
 
-    # the func below is the classical Euler method
+    # the func below is the classical Euler method, equation 6
     def Euler_method(self, Xp):
-        # create a gauss random dx
+        # create a gauss random dx, 'r' is random numbers with the standard Gaussian probability
         r = gauss(0, 1)
-        # equation 6
-        # 'r' is random numbers with the standard Gaussian probability
-        # 'vel' is the (known) velocity components evaluated at the particle position
-        Xp += self.vel * self.h + math.sqrt(2 * self.D) * math.sqrt(self.h) * r
+        Xp += math.sqrt(2 * self.D) * math.sqrt(self.h) * r
         return Xp
 
     # boundary condition
