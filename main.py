@@ -43,11 +43,11 @@ class TaskA(object):
         # input the data from out side
         vel = np.loadtxt('velocityCMM3.dat')
         # calculate the length of each field
-        gird_l = (self.x_max - self.x_min) / 32
+        grid_l = (self.x_max - self.x_min) / 32
         # add the label for every velocity field
         for i in range(len(vel)):
-            field_x = math.ceil((vel[i][0] - self.x_min) / gird_l) - 1
-            field_y = math.ceil((vel[i][1] - self.y_min) / gird_l) - 1
+            field_x = math.ceil((vel[i][0] - self.x_min) / grid_l) - 1
+            field_y = math.ceil((vel[i][1] - self.y_min) / grid_l) - 1
             self.vel_field[field_x][field_y][0] = vel[i][2]
             self.vel_field[field_x][field_y][1] = vel[i][3]
 
@@ -74,12 +74,11 @@ class TaskA(object):
 
     # this func is used to update the particles after a step time, the movement of each particle is built by York,
     def go_a_step(self):
-        gird_l = (self.x_max - self.x_min) / 32
         for i in range(len(self.x_data)):
             for n in range(len(self.x_data[i])):
                 # Confirm what field should each particle be in
-                field_x = math.ceil((self.x_data[i][n] - self.x_min) / gird_l) - 1
-                field_y = math.ceil((self.y_data[i][n] - self.y_min) / gird_l) - 1
+                field_x = math.ceil((self.x_data[i][n] - self.x_min) / ((self.x_max - self.x_min) / 32)) - 1
+                field_y = math.ceil((self.y_data[i][n] - self.y_min) / ((self.x_max - self.x_min) / 32)) - 1
                 # Use EX Euler method to calculate next position
                 self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], self.vel_field[field_x][field_y][0])
                 self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], self.vel_field[field_x][field_y][1])
@@ -87,15 +86,15 @@ class TaskA(object):
                 self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
 
     # this func is used to setup the particles in one traverse, built by York
-    def non_vel_2D_setup(self):
+    def setup_2D(self):
         # use np.random to init the particles
         for i in range(self.Np):
             # temp val for a random particle
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
-            if tx < 0:
-            # if math.sqrt(math.pow(tx, 2) + math.pow(ty, 2)) < 0.3:
+            # if tx < 0:  # for test, very interesting
+            if math.sqrt(math.pow(tx, 2) + math.pow(ty, 2)) < 0.3:
                 self.x_data[1].append(tx)
                 self.y_data[1].append(ty)
             else:
@@ -141,12 +140,12 @@ class TaskA(object):
             for n in range(len(self.x_data[i])):
                 ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
                 ivl_ys = math.ceil((self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1
-                data0[ivl_xs][ivl_ys][i] += 1
+                data0[ivl_xs][ivl_ys][i] += 1  # !! only add without reduce
         # transfer the data0 into data by calculating the proportion of blue particles in each grid
         for i in range(self.Nx):
             for j in range(self.Ny):
                 data[i][j] = data0[i][j][1] / (data0[i][j][0] + data0[i][j][1])
-        # the defination of colorbar of gird form
+        # the defination of colorbar of grid form
         colors1 = [(r, g, b) for (r, g, b) in zip(np.linspace(1, 0.8, 7), np.linspace(0, 0, 7), np.linspace(0, 0.9, 7))]
         colors2 = [(r, g, b) for (r, g, b) in zip(np.linspace(0.7, 0, 6), np.linspace(0, 1, 6), np.linspace(1, 0, 6))]
         colors3 = [(r, g, b) for (r, g, b) in zip(np.linspace(0, 0, 7), np.linspace(0.7, 0, 7), np.linspace(0, 1, 7))]
@@ -175,7 +174,7 @@ class TaskA(object):
     def main(self):
         print("This is CMM3 group's project of 2D probelms")
         # setup the init list of particles
-        self.non_vel_2D_setup()
+        self.setup_2D()
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
