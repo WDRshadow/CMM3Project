@@ -15,9 +15,9 @@ class TaskA(object):
         # init conditions / interface
         # time set, "h" is a step time
         self.time_max = 0.4
-        self.h = 0.05
+        self.h = 0.01
         # diffusivity
-        self.D = 0.01
+        self.D = 0.1
         # domain size
         self.x_min = -1
         self.x_max = 1
@@ -94,7 +94,8 @@ class TaskA(object):
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
-            if math.sqrt(math.pow(tx, 2) + math.pow(ty, 2)) < 0.3:
+            if tx < 0:
+            # if math.sqrt(math.pow(tx, 2) + math.pow(ty, 2)) < 0.3:
                 self.x_data[1].append(tx)
                 self.y_data[1].append(ty)
             else:
