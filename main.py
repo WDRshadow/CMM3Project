@@ -29,7 +29,7 @@ class TaskA(object):
         # number of particles
         self.Np = 65536
         # init velocity
-        self.vel_type = 0
+        self.vel_type = 1
         # -----------------------------------------
         # for temp particle position data save
         # data[0] is the value of red particle, [1] is the value for blue one
