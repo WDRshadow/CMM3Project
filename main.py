@@ -5,14 +5,16 @@ from random import gauss
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 import seaborn as sns
-from sys import exit
+import tkinter as tk
+from tkinter.ttk import *
+from tkinter import messagebox
 
 
 # for easier setting, I put all the code into a class
 class TaskA(object):
     def __init__(self):
         # ----------------------------------------
-        # init conditions / interface
+        # default conditions
         # time set, "h" is a step time
         self.time_max = 0.4
         self.h = 0.01
@@ -34,6 +36,9 @@ class TaskA(object):
         self.r = 0.3
         self.r_x = 0
         self.r_y = 0
+        # initial condition
+        self.con = 0
+        self.plot_type = 0
         # -----------------------------------------
         # for temp particle position data save
         # data[0] is the value of red particle, [1] is the value for blue one
@@ -164,32 +169,15 @@ class TaskA(object):
         # show
         plt.show()
 
-    '''
-    # This code is built by York, and used to test
-    def show(self):
-        plt.scatter(self.x_data[0], self.y_data[0], s=0.5, color='red')
-        plt.scatter(self.x_data[1], self.y_data[1], s=0.5, color='blue')
-        plt.xlabel("x")
-        plt.ylabel("y")
-        plt.show()
-    '''
-
     # main code for this class
     def main(self):
-        print("This is CMM3 group's project of 2D probelms")
         # setup the init list of particles
         self.setup_2D()
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
-        choice = input("For particle enter 0, for grid enter 1, and if you would like to quit, enter anything else.\n")
-        try:
-            choice = int(choice)
-        except:
-            print("Thanks for using our code.\nQuitting")
-            exit()
         # the visualization of particle form
-        if choice == 0:
+        if self.plot_type == 0:
             # show the first graph when t = 0
             self.show_particle_form()
             # cycle in Classic Euler Method step by step
@@ -197,20 +185,166 @@ class TaskA(object):
                 self.go_a_step()
                 self.show_particle_form()
         # the visualization of grid form
-        elif choice == 1:
+        elif self.plot_type == 1:
             # show the first graph when t = 0, data0 and data
             self.show_grid()
             # cycle in Classic Euler Method step by step
             for i in range(int(self.time_max / self.h)):
                 self.go_a_step()
                 self.show_grid()
-        print("Thanks for using our code.\nQuitting")
-        exit()
+
+
+# GUI for input the initial condition
+class GUI(object):
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Programme Inputs Group 16")
+        self.window.resizable(width=False, height=False)
+
+        self.xminlab = tk.Label(text="x_min")
+        self.xmaxlab = tk.Label(text='x_max')
+        self.yminlab = tk.Label(text='y_min')
+        self.ymaxlab = tk.Label(text='y_max')
+        self.difflab = tk.Label(text="Diffusivity")
+        self.timelab = tk.Label(text="Total time")
+        self.steplab = tk.Label(text='Step time')
+        self.spillxlab = tk.Label(text='Spill x coordinate')
+        self.spillylab = tk.Label(text='Spill y coordinate')
+        self.spill_radlab = tk.Label(text='Spill radius')
+        self.Nx_lab = tk.Label(text='Nx')
+        self.Ny_lab = tk.Label(text='Ny')
+        self.Np_lab = tk.Label(text='Number of particles')
+        self.init_condition_lab = tk.Label(text='Initial condition')
+        self.veltype_lab = tk.Label(text='Velocity Type')
+        self.plot_lab = tk.Label(text='Plot type')
+
+        self.xmininp = tk.Entry()
+        self.xmaxinp = tk.Entry()
+        self.ymininp = tk.Entry()
+        self.ymaxinp = tk.Entry()
+        self.diffinp = tk.Entry()
+        self.timeinp = tk.Entry()
+        self.stepinp = tk.Entry()
+        self.spillxinp = tk.Entry()
+        self.spillyinp = tk.Entry()
+        self.spill_radinp = tk.Entry()
+        self.Nxinp = tk.Entry()
+        self.Nyinp = tk.Entry()
+        self.Npinp = tk.Entry()
+        self.init_condition = Combobox(state="readonly")
+        self.init_condition["values"] = (
+            "For 2D Problem",
+            "For 1D Problem"
+        )
+        self.init_condition.current(0)
+        self.veltype = Combobox(state="readonly")
+        self.veltype["values"] = (
+            "zero vel",
+            "read from file"
+        )
+        self.veltype.current(0)
+        self.plot = Combobox(state="readonly")
+        self.plot["values"] = (
+            "Particle",
+            "Grid"
+        )
+        self.plot.current(0)
+
+        input_var_lab = [self.xminlab, self.xmaxlab, self.yminlab, self.ymaxlab, self.difflab, self.timelab,
+                         self.steplab, self.spillxlab, self.spillylab, self.spill_radlab, self.Nx_lab, self.Ny_lab,
+                         self.Np_lab, self.init_condition_lab, self.veltype_lab, self.plot_lab]
+
+        input_var_entries = [self.xmininp, self.xmaxinp, self.ymininp, self.ymaxinp, self.diffinp, self.timeinp,
+                             self.stepinp, self.spillxinp, self.spillyinp, self.spill_radinp, self.Nxinp, self.Nyinp,
+                             self.Npinp, self.init_condition, self.veltype, self.plot]
+
+        for i in range(len(input_var_lab)):
+            input_var_lab[i].grid(row=i, column=0, padx=5, pady=5, sticky='NW')
+
+        for i in range(len(input_var_entries)):
+            input_var_entries[i].grid(row=i, column=1, padx=5, pady=5, sticky='NW')
+
+        self.submit = tk.Button(text="Submit", command=self.get_var)
+        self.submit.grid(row=len(input_var_lab), column=3, padx=5, pady=5, sticky='N')
+
+        self.time_max = ''
+        self.h = ''
+        self.D = ''
+        self.x_min = ''
+        self.x_max = ''
+        self.y_min = ''
+        self.y_max = ''
+        self.Nx = ''
+        self.Ny = ''
+        self.Np = ''
+        self.vel_type = 0
+        self.r = ''
+        self.r_x = ''
+        self.r_y = ''
+        self.plot_type = 0
+        self.con = 0
+
+    def get_var(self):
+        self.x_min = self.xmininp.get()
+        self.x_max = self.xmaxinp.get()
+        self.y_min = self.ymininp.get()
+        self.y_max = self.ymaxinp.get()
+        self.D = self.diffinp.get()
+        self.time_max = self.timeinp.get()
+        self.h = self.stepinp.get()
+        self.Nx = self.Nxinp.get()
+        self.Ny = self.Nyinp.get()
+        self.Np = self.Npinp.get()
+        self.r = self.spill_radinp.get()
+        self.r_x = self.spillxinp.get()
+        self.r_y = self.spillyinp.get()
+        self.vel_type = self.veltype.current()
+        self.plot_type = self.plot.current()
+        self.con = self.init_condition.current()
+        messagebox.showinfo("Save", "Save successfully")
+        self.window.destroy()
+
+    def imp_val(self, CMM):
+        if len(self.x_min) != 0:
+            CMM.x_min = float(self.x_min)
+        if len(self.x_max) != 0:
+            CMM.x_max = float(self.x_max)
+        if len(self.y_min) != 0:
+            CMM.y_min = float(self.y_min)
+        if len(self.y_max) != 0:
+            CMM.y_max = float(self.y_max)
+        if len(self.D) != 0:
+            CMM.D = float(self.D)
+        if len(self.time_max) != 0:
+            CMM.time_max = float(self.time_max)
+        if len(self.h) != 0:
+            CMM.h = float(self.h)
+        if len(self.Nx) != 0:
+            CMM.Nx = int(self.Nx)
+        if len(self.Ny) != 0:
+            CMM.Ny = int(self.Ny)
+        if len(self.Np) != 0:
+            CMM.Np = int(self.Np)
+        if len(self.r) != 0:
+            CMM.r = float(self.r)
+        if len(self.r_x) != 0:
+            CMM.r_x = float(self.r_x)
+        if len(self.r_y) != 0:
+            CMM.r_y = float(self.r_y)
+        CMM.vel_type = self.vel_type
+        CMM.plot_type = self.plot_type
+        CMM.con = self.con
+
+    def main(self):
+        self.window.mainloop()
 
 
 # main code for the whole TaskA
 if __name__ == '__main__':
     # build a instance
+    gui = GUI()
     run = TaskA()
     # to run main code
+    gui.main()
+    gui.imp_val(run)
     run.main()
