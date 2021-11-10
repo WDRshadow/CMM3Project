@@ -113,10 +113,10 @@ class TaskA(object):
             elif self.con == 1:
                 if tx < 0:
                     self.x_data[1].append(tx)
-                    self.y_data[1].append(ty)
+                    self.y_data[1].append(0)
                 else:
                     self.x_data[0].append(tx)
-                    self.y_data[0].append(ty)
+                    self.y_data[0].append(0)
 
     # the visualization of particle form, by The Kite
     def show_particle_form(self):
@@ -177,6 +177,10 @@ class TaskA(object):
         # show
         plt.show()
 
+    # show 1D form if self.con == 1, by The Kite
+    def sow_1D_form(self):
+        return
+
     # main code for this class
     def main(self):
         # setup the init list of particles
@@ -202,7 +206,11 @@ class TaskA(object):
                     self.go_a_step()
                     self.show_grid()
         elif self.con == 1:
-            print('Here should be the 1D problem diagram.')
+            # cycle in Classic Euler Method step by step
+            for i in range(int(self.time_max / 2 * self.h)):
+                self.go_a_step()
+            # show the 1D diagram when t = 0.2
+            self.sow_1D_form()
 
 
 # GUI for input the initial condition by William
