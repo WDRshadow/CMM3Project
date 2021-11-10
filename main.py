@@ -103,12 +103,20 @@ class TaskA(object):
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
             # if tx < 0:  # for test, very interesting
-            if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
-                self.x_data[1].append(tx)
-                self.y_data[1].append(ty)
-            else:
-                self.x_data[0].append(tx)
-                self.y_data[0].append(ty)
+            if self.con == 0:
+                if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
+                    self.x_data[1].append(tx)
+                    self.y_data[1].append(ty)
+                else:
+                    self.x_data[0].append(tx)
+                    self.y_data[0].append(ty)
+            elif self.con == 1:
+                if tx < 0:
+                    self.x_data[1].append(tx)
+                    self.y_data[1].append(ty)
+                else:
+                    self.x_data[0].append(tx)
+                    self.y_data[0].append(ty)
 
     # the visualization of particle form, by The Kite
     def show_particle_form(self):
@@ -176,22 +184,25 @@ class TaskA(object):
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
-        # the visualization of particle form
-        if self.plot_type == 0:
-            # show the first graph when t = 0
-            self.show_particle_form()
-            # cycle in Classic Euler Method step by step
-            for i in range(int(self.time_max / self.h)):
-                self.go_a_step()
+        if self.con == 0:
+            # the visualization of particle form
+            if self.plot_type == 0:
+                # show the first graph when t = 0
                 self.show_particle_form()
-        # the visualization of grid form
-        elif self.plot_type == 1:
-            # show the first graph when t = 0, data0 and data
-            self.show_grid()
-            # cycle in Classic Euler Method step by step
-            for i in range(int(self.time_max / self.h)):
-                self.go_a_step()
+                # cycle in Classic Euler Method step by step
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    self.show_particle_form()
+                # the visualization of grid form
+            elif self.plot_type == 1:
+                # show the first graph when t = 0, data0 and data
                 self.show_grid()
+                # cycle in Classic Euler Method step by step
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    self.show_grid()
+        elif self.con == 1:
+            print('Here should be the 1D problem diagram.')
 
 
 # GUI for input the initial condition by William
