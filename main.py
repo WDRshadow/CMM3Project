@@ -30,6 +30,10 @@ class TaskA(object):
         self.Np = 65536
         # init velocity
         self.vel_type = 0
+        # blue particles location / radius and Center of circle
+        self.r = 0.3
+        self.r_x = 0
+        self.r_y = 0
         # -----------------------------------------
         # for temp particle position data save
         # data[0] is the value of red particle, [1] is the value for blue one
@@ -94,7 +98,7 @@ class TaskA(object):
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
             # if tx < 0:  # for test, very interesting
-            if math.sqrt(math.pow(tx, 2) + math.pow(ty, 2)) < 0.3:
+            if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
                 self.x_data[1].append(tx)
                 self.y_data[1].append(ty)
             else:
