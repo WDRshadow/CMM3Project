@@ -47,7 +47,7 @@ class TaskA(object):
         # init velocity field data saver, include x, y and velocity
         self.vel_field = np.zeros((32, 32, 2))
 
-    # setup the velocity field
+    # setup the velocity field, by York
     def velocity_field_setup(self):
         # input the data from out side
         vel = np.loadtxt('velocityCMM3.dat')
@@ -95,7 +95,7 @@ class TaskA(object):
                 self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
 
     # this func is used to setup the particles in one traverse, built by York
-    def setup_2D(self):
+    def setup(self):
         # use np.random to init the particles
         for i in range(self.Np):
             # temp val for a random particle
@@ -172,7 +172,7 @@ class TaskA(object):
     # main code for this class
     def main(self):
         # setup the init list of particles
-        self.setup_2D()
+        self.setup()
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
@@ -194,13 +194,15 @@ class TaskA(object):
                 self.show_grid()
 
 
-# GUI for input the initial condition
+# GUI for input the initial condition by William
 class GUI(object):
     def __init__(self):
+        # generate the window
         self.window = tk.Tk()
         self.window.title("Programme Inputs Group 16")
         self.window.resizable(width=False, height=False)
 
+        # add label
         self.xminlab = tk.Label(text="x_min")
         self.xmaxlab = tk.Label(text='x_max')
         self.yminlab = tk.Label(text='y_min')
@@ -218,6 +220,7 @@ class GUI(object):
         self.veltype_lab = tk.Label(text='Velocity Type')
         self.plot_lab = tk.Label(text='Plot type')
 
+        # add import interface
         self.xmininp = tk.Entry()
         self.xmaxinp = tk.Entry()
         self.ymininp = tk.Entry()
@@ -267,6 +270,7 @@ class GUI(object):
         self.submit = tk.Button(text="Submit", command=self.get_var)
         self.submit.grid(row=len(input_var_lab), column=3, padx=5, pady=5, sticky='N')
 
+        # init condition, for temp save
         self.time_max = ''
         self.h = ''
         self.D = ''
@@ -284,6 +288,7 @@ class GUI(object):
         self.plot_type = 0
         self.con = 0
 
+    # for the behave after click 'submit' button
     def get_var(self):
         self.x_min = self.xmininp.get()
         self.x_max = self.xmaxinp.get()
@@ -301,9 +306,11 @@ class GUI(object):
         self.vel_type = self.veltype.current()
         self.plot_type = self.plot.current()
         self.con = self.init_condition.current()
+        # success message after click button
         messagebox.showinfo("Save", "Save successfully")
         self.window.destroy()
 
+    # provide a interface to import data to TaskA class
     def imp_val(self, CMM):
         if len(self.x_min) != 0:
             CMM.x_min = float(self.x_min)
@@ -335,6 +342,7 @@ class GUI(object):
         CMM.plot_type = self.plot_type
         CMM.con = self.con
 
+    # main code for the GUI class
     def main(self):
         self.window.mainloop()
 
