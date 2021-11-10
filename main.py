@@ -17,7 +17,7 @@ class TaskA(object):
         self.time_max = 0.4
         self.h = 0.01
         # diffusivity
-        self.D = 0.01
+        self.D = 0.1
         # domain size
         self.x_min = -1
         self.x_max = 1
@@ -29,7 +29,7 @@ class TaskA(object):
         # number of particles
         self.Np = 65536
         # init velocity
-        self.vel_type = 1
+        self.vel_type = 0
         # -----------------------------------------
         # for temp particle position data save
         # data[0] is the value of red particle, [1] is the value for blue one
@@ -140,7 +140,7 @@ class TaskA(object):
             for n in range(len(self.x_data[i])):
                 ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
                 ivl_ys = math.ceil((self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1
-                data0[ivl_xs][ivl_ys][i] += 1  # !! only add without reduce
+                data0[ivl_xs][ivl_ys][i] += 1
         # transfer the data0 into data by calculating the proportion of blue particles in each grid
         for i in range(self.Nx):
             for j in range(self.Ny):
