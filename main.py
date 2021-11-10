@@ -178,7 +178,7 @@ class TaskA(object):
         plt.show()
 
     # show 1D form if self.con == 1, by The Kite
-    def sow_1D_form(self):
+    def show_1D_form(self):
         return
 
     # main code for this class
@@ -210,7 +210,7 @@ class TaskA(object):
             for i in range(int(self.time_max / 2 * self.h)):
                 self.go_a_step()
             # show the 1D diagram when t = 0.2
-            self.sow_1D_form()
+            self.show_1D_form()
 
 
 # GUI for input the initial condition by William
