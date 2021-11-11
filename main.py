@@ -239,12 +239,14 @@ class TaskA(object):
                     self.go_a_step()
                     self.show_grid()
         elif self.con == 1:
+            temp_data_x = self.x_data
             for i in range(3):
                 # cycle in Classic Euler Method step by step
                 for j in range(int(self.time_max / (2 * self.h))):
                     self.go_a_step()
                 # show the 1D diagram when t = 0.2
                 self.show_1D_form(i)
+                self.x_data = temp_data_x
             plt.show()
 
 
