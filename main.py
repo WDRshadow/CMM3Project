@@ -17,7 +17,7 @@ class TaskA(object):
         # default conditions
         # time set, "h" is a step time
         self.time_max = 0.4
-        self.h = 0.01
+        self.h = 0.05
         # diffusivity
         self.D = 0.1
         # domain size
@@ -36,8 +36,9 @@ class TaskA(object):
         self.r = 0.3
         self.r_x = 0
         self.r_y = 0
-        # initial condition
+        # initial condition, 0 means 2D problem and 1 means 1D problem
         self.con = 0
+        # plot type, 0 means particle form, 1 means grid
         self.plot_type = 0
         # -----------------------------------------
         # for temp particle position data save
@@ -69,16 +70,16 @@ class TaskA(object):
 
     # boundary condition
     def BC(self, x, y):
-        if x < -1:
-            x = -2 - x
+        if x < self.x_min:
+            x = 2 * self.x_min - x
         else:
-            if x > 1:
-                x = 2 - x
-        if y < -1:
-            y = -2 - y
+            if x > self.x_max:
+                x = 2 * self.x_max - x
+        if y < self.y_min:
+            y = 2 * self.y_min - y
         else:
-            if y > 1:
-                y = 2 - y
+            if y > self.y_max:
+                y = 2 * self.y_max - y
         return x, y
 
     # this func is used to update the particles after a step time, the movement of each particle is built by York,
@@ -113,10 +114,10 @@ class TaskA(object):
             elif self.con == 1:
                 if tx < 0:
                     self.x_data[1].append(tx)
-                    self.y_data[1].append(0)
+                    self.y_data[1].append(ty)
                 else:
                     self.x_data[0].append(tx)
-                    self.y_data[0].append(0)
+                    self.y_data[0].append(ty)
 
     # the visualization of particle form, by The Kite
     def show_particle_form(self):
@@ -178,8 +179,40 @@ class TaskA(object):
         plt.show()
 
     # show 1D form if self.con == 1, by The Kite
-    def show_1D_form(self):
-        return
+    def show_1D_form(self, j):
+        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
+        # data0 is set to count and save the number of red particles and blue particles
+        data0 = np.zeros((self.Nx, 2))
+        # data is set to figure the proportion of blue particles in each grid
+        data = np.zeros(self.Nx)
+        # calculate the data0 of grid
+        for i in range(len(self.x_data)):
+            # to locate which grid is the new particle in and add it to data0[i]
+            for n in range(len(self.x_data[i])):
+                ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
+                data0[ivl_xs][i] += 1
+        # transfer the data0 into data by calculating the proportion of blue particles in each grid
+        for i in range(self.Nx):
+            data[i] = data0[i][1] / (data0[i][0] + data0[i][1])
+        plt.title("1D problem", fontname='Arial', fontsize=30, weight='bold')
+        plt.xlabel("x", fontsize=20)
+        plt.ylabel("Ф", fontsize=20)
+        plt.xlim([-1, 1])
+        plt.ylim([0, 1])
+        plt.xticks([-1 + i * 0.5 for i in range(5)])
+        plt.yticks([0 + i * 0.2 for i in range(6)])
+        if j == 0:
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='purple',
+                     label='Np={},run1'.format(self.Np))
+            plt.legend()
+        if j == 1:
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='blue',
+                     label='Np={},run2'.format(self.Np))
+            plt.legend()
+        if j == 2:
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='orange',
+                     label='Np={},run3'.format(self.Np))
+            plt.legend()
 
     # main code for this class
     def main(self):
@@ -206,11 +239,13 @@ class TaskA(object):
                     self.go_a_step()
                     self.show_grid()
         elif self.con == 1:
-            # cycle in Classic Euler Method step by step
-            for i in range(int(self.time_max / 2 * self.h)):
-                self.go_a_step()
-            # show the 1D diagram when t = 0.2
-            self.show_1D_form()
+            for i in range(3):
+                # cycle in Classic Euler Method step by step
+                for j in range(int(self.time_max / (2 * self.h))):
+                    self.go_a_step()
+                # show the 1D diagram when t = 0.2
+                self.show_1D_form(i)
+            plt.show()
 
 
 # GUI for input the initial condition by William
@@ -326,7 +361,7 @@ class GUI(object):
         self.plot_type = self.plot.current()
         self.con = self.init_condition.current()
         # success message after click button
-        messagebox.showinfo("Save", "Save successfully")
+        messagebox.showinfo("Submit", "Submit successfully")
         self.window.destroy()
 
     # provide a interface to import data to TaskA class
