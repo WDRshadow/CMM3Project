@@ -17,9 +17,9 @@ class TaskA(object):
         # default conditions
         # time set, "h" is a step time
         self.time_max = 0.4
-        self.h = 0.05
+        self.h = 0.0005
         # diffusivity
-        self.D = 0.1
+        self.D = 0.01
         # domain size
         self.x_min = -1
         self.x_max = 1
