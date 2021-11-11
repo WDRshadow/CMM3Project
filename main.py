@@ -48,7 +48,7 @@ class TaskA(object):
         # init velocity field data saver, include x, y and velocity
         self.vel_field = np.zeros((32, 32, 2))
 
-    # setup the velocity field, by York
+    # setup the velocity field
     def velocity_field_setup(self):
         # input the data from out side
         vel = np.loadtxt('velocityCMM3.dat')
@@ -178,7 +178,7 @@ class TaskA(object):
         # show
         plt.show()
 
-    # show 1D form if self.con == 1, by The Kite
+    # show 1D form if self.con == 1, by Ziqing and Zsolt
     def show_1D_form(self, j):
         ivl_grid_x = (self.x_max - self.x_min) / self.Nx
         # data0 is set to count and save the number of red particles and blue particles
@@ -250,7 +250,7 @@ class TaskA(object):
             plt.show()
 
 
-# GUI for input the initial condition by William
+# GUI for input the initial condition by William and George
 class GUI(object):
     def __init__(self):
         # generate the window
