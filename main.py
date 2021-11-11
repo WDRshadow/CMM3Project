@@ -217,13 +217,13 @@ class TaskA(object):
 
     # main code for this class
     def main(self):
-        # setup the init list of particles
-        self.setup()
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
         # if con == 0, means 2D problem
         if self.con == 0:
+            # setup the init list of particles
+            self.setup()
             # the visualization of particle form
             if self.plot_type == 0:
                 # show the first graph when t = 0
@@ -243,13 +243,13 @@ class TaskA(object):
         # if con == 1, means 1D problem
         elif self.con == 1:
             for i in range(3):
+                # setup the init list of particles for 3 times
+                self.setup()
                 # cycle in Classic Euler Method step by step
                 for j in range(int(self.time_max / (2 * self.h))):
                     self.go_a_step()
-                # show the 1D diagram when t = 0.2
+                # show the 1D diagram when t = time_max / 2
                 self.show_1D_form(i)
-                if i < 2:
-                    self.setup()
             plt.show()
 
 
@@ -326,7 +326,7 @@ class GUI(object):
         for i in range(len(input_var_entries)):
             input_var_entries[i].grid(row=i, column=1, padx=5, pady=5, sticky='NW')
 
-        self.submit = tk.Button(text="Submit", command=self.get_var)
+        self.submit = tk.Button(text="Submit", command=self.get_val)
         self.submit.grid(row=len(input_var_lab), column=3, padx=5, pady=5, sticky='N')
 
         # init condition, for temp save
@@ -348,7 +348,7 @@ class GUI(object):
         self.con = 0
 
     # for the behave after click 'submit' button
-    def get_var(self):
+    def get_val(self):
         self.x_min = self.xmininp.get()
         self.x_max = self.xmaxinp.get()
         self.y_min = self.ymininp.get()
