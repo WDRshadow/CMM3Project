@@ -33,7 +33,7 @@ not started yet
 
 **Tasks C. Develop a user interface**
   
-not started yet
+In Task C, we create a GUI window by using tkinter lib. We create 16 interface including max time, step time, domain range, diffusivity, number of grids, number of particles, velocity type, initial condition, radius and Center of circle of blue area and plot type.
 
 **Tasks D. Use the python code you developed to perform the following engineering simulations**
 
