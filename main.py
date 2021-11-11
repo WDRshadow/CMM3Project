@@ -98,13 +98,15 @@ class TaskA(object):
     # this func is used to setup the particles in one traverse, built by York
     def setup(self):
         # use np.random to init the particles
+        self.x_data = [[], []]
+        self.y_data = [[], []]
         for i in range(self.Np):
             # temp val for a random particle
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
-            # if tx < 0:  # for test, very interesting
             if self.con == 0:
+                # if tx < 0:  # for test, very interesting
                 if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
                     self.x_data[1].append(tx)
                     self.y_data[1].append(ty)
@@ -122,23 +124,22 @@ class TaskA(object):
     # the visualization of particle form, by The Kite
     def show_particle_form(self):
         # set the figure and pass in the coordinates of blue and red particles
-        plt.figure(figsize=(10, 8))
+        fig = plt.figure(figsize=(10, 8))
         plt.scatter(self.x_data[1], self.y_data[1], s=1, c='b')
         plt.scatter(self.x_data[0], self.y_data[0], s=1, c='r')
         # set the layout of axis and title
         plt.title("2D problem", fontname='Arial', fontsize=30, weight='bold')
         plt.xlabel("x", fontname='Arial', fontsize=20, weight='bold')
         plt.ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-        plt.xlim([-1, 1])
-        plt.ylim([-1, 1])
+        plt.xlim([self.x_min, self.x_max])
+        plt.ylim([self.y_min, self.y_max])
         plt.xticks([-1 + i * 0.5 for i in range(5)])
         plt.yticks([-1 + i * 0.5 for i in range(5)])
         # set the parameters of the colorbar in particle form and create it
         cmap = ListedColormap(["red", "blue"])
         norm = mpl.colors.Normalize(vmin=0, vmax=1)
-        plt.colorbar(
-            mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
-        )
+        im3 = plt.scatter(0, 0, s=0, c=0, cmap=cmap, norm=norm)
+        fig.colorbar(im3)
         # show
         plt.show()
 
@@ -156,8 +157,8 @@ class TaskA(object):
         for i in range(len(self.x_data)):
             # to locate which grid is the new particle in and add it to data0[i]
             for n in range(len(self.x_data[i])):
-                ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
-                ivl_ys = math.ceil((self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1
+                ivl_xs = math.ceil(self.Nx - ((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1)
+                ivl_ys = math.ceil(((self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1)
                 data0[ivl_xs][ivl_ys][i] += 1
         # transfer the data0 into data by calculating the proportion of blue particles in each grid
         for i in range(self.Nx):
@@ -221,6 +222,7 @@ class TaskA(object):
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
+        # if con == 0, means 2D problem
         if self.con == 0:
             # the visualization of particle form
             if self.plot_type == 0:
@@ -238,15 +240,16 @@ class TaskA(object):
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
                     self.show_grid()
+        # if con == 1, means 1D problem
         elif self.con == 1:
-            temp_data_x = self.x_data
             for i in range(3):
                 # cycle in Classic Euler Method step by step
                 for j in range(int(self.time_max / (2 * self.h))):
                     self.go_a_step()
                 # show the 1D diagram when t = 0.2
                 self.show_1D_form(i)
-                self.x_data = temp_data_x
+                if i < 2:
+                    self.setup()
             plt.show()
 
 
