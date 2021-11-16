@@ -72,28 +72,35 @@ class TaskA(object):
     def BC(self, x, y):
         if x < self.x_min:
             x = 2 * self.x_min - x
-        else:
-            if x > self.x_max:
-                x = 2 * self.x_max - x
+        elif x > self.x_max:
+            x = 2 * self.x_max - x
         if y < self.y_min:
             y = 2 * self.y_min - y
-        else:
-            if y > self.y_max:
-                y = 2 * self.y_max - y
+        elif y > self.y_max:
+            y = 2 * self.y_max - y
         return x, y
 
     # this func is used to update the particles after a step time, the movement of each particle is built by York,
     def go_a_step(self):
-        for i in range(len(self.x_data)):
-            for n in range(len(self.x_data[i])):
-                # Confirm what field should each particle be in
-                field_x = math.ceil((self.x_data[i][n] - self.x_min) / ((self.x_max - self.x_min) / 32)) - 1
-                field_y = math.ceil((self.y_data[i][n] - self.y_min) / ((self.x_max - self.x_min) / 32)) - 1
-                # Use EX Euler method to calculate next position
-                self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], self.vel_field[field_x][field_y][0])
-                self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], self.vel_field[field_x][field_y][1])
-                # use the boundary condition above
-                self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
+        if self.vel_type == 0:
+            for i in range(len(self.x_data)):
+                for n in range(len(self.x_data[i])):
+                    # Use EX Euler method to calculate next position
+                    self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], 0)
+                    self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], 0)
+                    # use the boundary condition above
+                    self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
+        elif self.vel_type == 1:
+            for i in range(len(self.x_data)):
+                for n in range(len(self.x_data[i])):
+                    # Confirm what field should each particle be in
+                    field_x = math.ceil((self.x_data[i][n] - self.x_min) / ((self.x_max - self.x_min) / 32)) - 1
+                    field_y = math.ceil((self.y_data[i][n] - self.y_min) / ((self.x_max - self.x_min) / 32)) - 1
+                    # Use EX Euler method to calculate next position
+                    self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], self.vel_field[field_x][field_y][0])
+                    self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], self.vel_field[field_x][field_y][1])
+                    # use the boundary condition above
+                    self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
 
     # this func is used to setup the particles in one traverse, built by York
     def setup(self):
