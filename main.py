@@ -43,13 +43,48 @@ class TaskA(object):
         # -----------------------------------------
         # for temp particle position data save
         # data[0] is the value of red particle, [1] is the value for blue one
-        self.x_data = [[], []]
-        self.y_data = [[], []]
+        self.x_data = None
+        self.y_data = None
         # init velocity field data saver, include x, y and velocity
-        self.vel_field = np.zeros((32, 32, 2))
+        self.vel_field = None
+        # for class GUI temp save
+        self.gui = None
+
+    # import initial conditions
+    def imp_val(self):
+        if len(self.gui.x_min) != 0:
+            self.x_min = float(self.gui.x_min)
+        if len(self.gui.x_max) != 0:
+            self.x_max = float(self.gui.x_max)
+        if len(self.gui.y_min) != 0:
+            self.y_min = float(self.gui.y_min)
+        if len(self.gui.y_max) != 0:
+            self.y_max = float(self.gui.y_max)
+        if len(self.gui.D) != 0:
+            self.D = float(self.gui.D)
+        if len(self.gui.time_max) != 0:
+            self.time_max = float(self.gui.time_max)
+        if len(self.gui.h) != 0:
+            self.h = float(self.gui.h)
+        if len(self.gui.Nx) != 0:
+            self.Nx = int(self.gui.Nx)
+        if len(self.gui.Ny) != 0:
+            self.Ny = int(self.gui.Ny)
+        if len(self.gui.Np) != 0:
+            self.Np = int(self.gui.Np)
+        if len(self.gui.r) != 0:
+            self.r = float(self.gui.r)
+        if len(self.gui.r_x) != 0:
+            self.r_x = float(self.gui.r_x)
+        if len(self.gui.r_y) != 0:
+            self.r_y = float(self.gui.r_y)
+        self.vel_type = self.gui.vel_type
+        self.plot_type = self.gui.plot_type
+        self.con = self.gui.con
 
     # setup the velocity field
     def velocity_field_setup(self):
+        self.vel_field = np.zeros((32, 32, 2))
         # input the data from out side
         vel = np.loadtxt('velocityCMM3.dat')
         # calculate the length of each field
@@ -60,6 +95,32 @@ class TaskA(object):
             field_y = math.ceil((vel[i][1] - self.y_min) / grid_l) - 1
             self.vel_field[field_x][field_y][0] = vel[i][2]
             self.vel_field[field_x][field_y][1] = vel[i][3]
+
+    # this func is used to setup the particles in one traverse, built by York
+    def setup(self):
+        # use np.random to init the particles
+        self.x_data = [[], []]
+        self.y_data = [[], []]
+        for i in range(self.Np):
+            # temp val for a random particle
+            tx = np.random.uniform(self.x_min, self.x_max)
+            ty = np.random.uniform(self.y_min, self.y_max)
+            # select the color of this particle and count each color in data0
+            if self.con == 0:
+                # if tx < 0:  # for test, very interesting
+                if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
+                    self.x_data[1].append(tx)
+                    self.y_data[1].append(ty)
+                else:
+                    self.x_data[0].append(tx)
+                    self.y_data[0].append(ty)
+            elif self.con == 1:
+                if tx < 0:
+                    self.x_data[1].append(tx)
+                    self.y_data[1].append(ty)
+                else:
+                    self.x_data[0].append(tx)
+                    self.y_data[0].append(ty)
 
     # the func below is the classical Euler method, equation 6
     def EX_Euler_method(self, Xp, u):
@@ -101,32 +162,6 @@ class TaskA(object):
                     self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], self.vel_field[field_x][field_y][1])
                     # use the boundary condition above
                     self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
-
-    # this func is used to setup the particles in one traverse, built by York
-    def setup(self):
-        # use np.random to init the particles
-        self.x_data = [[], []]
-        self.y_data = [[], []]
-        for i in range(self.Np):
-            # temp val for a random particle
-            tx = np.random.uniform(self.x_min, self.x_max)
-            ty = np.random.uniform(self.y_min, self.y_max)
-            # select the color of this particle and count each color in data0
-            if self.con == 0:
-                # if tx < 0:  # for test, very interesting
-                if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
-                    self.x_data[1].append(tx)
-                    self.y_data[1].append(ty)
-                else:
-                    self.x_data[0].append(tx)
-                    self.y_data[0].append(ty)
-            elif self.con == 1:
-                if tx < 0:
-                    self.x_data[1].append(tx)
-                    self.y_data[1].append(ty)
-                else:
-                    self.x_data[0].append(tx)
-                    self.y_data[0].append(ty)
 
     # the visualization of particle form, by The Kite
     def show_particle_form(self):
@@ -224,6 +259,11 @@ class TaskA(object):
 
     # main code for this class
     def main(self):
+        # use a GUI instance for input initial conditions
+        self.gui = GUI()
+        self.gui.main()
+        self.imp_val()
+        del self.gui
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
@@ -376,38 +416,6 @@ class GUI(object):
         messagebox.showinfo("Submit", "Submit successfully")
         self.window.destroy()
 
-    # provide a interface to import data to TaskA class
-    def imp_val(self, CMM):
-        if len(self.x_min) != 0:
-            CMM.x_min = float(self.x_min)
-        if len(self.x_max) != 0:
-            CMM.x_max = float(self.x_max)
-        if len(self.y_min) != 0:
-            CMM.y_min = float(self.y_min)
-        if len(self.y_max) != 0:
-            CMM.y_max = float(self.y_max)
-        if len(self.D) != 0:
-            CMM.D = float(self.D)
-        if len(self.time_max) != 0:
-            CMM.time_max = float(self.time_max)
-        if len(self.h) != 0:
-            CMM.h = float(self.h)
-        if len(self.Nx) != 0:
-            CMM.Nx = int(self.Nx)
-        if len(self.Ny) != 0:
-            CMM.Ny = int(self.Ny)
-        if len(self.Np) != 0:
-            CMM.Np = int(self.Np)
-        if len(self.r) != 0:
-            CMM.r = float(self.r)
-        if len(self.r_x) != 0:
-            CMM.r_x = float(self.r_x)
-        if len(self.r_y) != 0:
-            CMM.r_y = float(self.r_y)
-        CMM.vel_type = self.vel_type
-        CMM.plot_type = self.plot_type
-        CMM.con = self.con
-
     # main code for the GUI class
     def main(self):
         self.window.mainloop()
@@ -416,13 +424,6 @@ class GUI(object):
 # main code for the whole TaskA
 if __name__ == '__main__':
     # build a instance
-    gui = GUI()
-    run = TaskA()
-    # to run GUI main code
-    gui.main()
-    # give the variables to class TaskA
-    gui.imp_val(run)
-    # release GUI
-    del gui
+    cmm = TaskA()
     # run TaskA main code
-    run.main()
+    cmm.main()
