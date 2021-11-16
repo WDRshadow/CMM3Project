@@ -411,7 +411,11 @@ if __name__ == '__main__':
     # build a instance
     gui = GUI()
     run = TaskA()
-    # to run main code
+    # to run GUI main code
     gui.main()
+    # give the variables to class TaskA
     gui.imp_val(run)
+    # release GUI
+    del gui
+    # run TaskA main code
     run.main()
