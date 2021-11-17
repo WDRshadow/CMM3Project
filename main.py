@@ -393,6 +393,22 @@ class GUI(object):
         self.r_y = ''
         self.plot_type = 0
         self.con = 0
+        
+        #Add in the default values so they are visible and can be edited in GUI
+        self.xmininp.insert(0,'-1')
+        self.xmaxinp.insert(0,'1')
+        self.ymininp.insert(0,'-1')
+        self.ymaxinp.insert(0,'1')
+        self.diffinp.insert(0,'0.01')
+        self.timeinp.insert(0,'0.4')
+        self.stepinp.insert(0,'0.005')
+        self.spillxinp.insert(0,'0')
+        self.spillyinp.insert(0,'0')
+        self.spill_radinp.input(0,'0.1')
+        self.Nxinp.insert(0,'64')
+        self.Nyinp.insert(0,'64')
+        self.Npinp.insert(0,'65536')
+      
 
     # for the behave after click 'submit' button
     def get_val(self):
