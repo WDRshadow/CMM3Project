@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 
 # for easier setting, I put all the code into a class
-class TaskA(object):
+class TaskA:
     def __init__(self):
         # ----------------------------------------
         # default conditions
@@ -123,14 +123,14 @@ class TaskA(object):
                     self.y_data[0].append(ty)
 
     # the func below is the classical Euler method, equation 6
-    def EX_Euler_method(self, Xp, u):
+    def ex_euler(self, Xp, u):
         # create a gauss random dx, 'r' is random numbers with the standard Gaussian probability
         r = gauss(0, 1)
         Xp += u * self.h + math.sqrt(2 * self.D) * math.sqrt(self.h) * r
         return Xp
 
     # boundary condition
-    def BC(self, x, y):
+    def bc(self, x, y):
         if x < self.x_min:
             x = 2 * self.x_min - x
         elif x > self.x_max:
@@ -143,25 +143,21 @@ class TaskA(object):
 
     # this func is used to update the particles after a step time, the movement of each particle is built by York,
     def go_a_step(self):
-        if self.vel_type == 0:
-            for i in range(len(self.x_data)):
-                for n in range(len(self.x_data[i])):
+        for i in range(len(self.x_data)):
+            for n in range(len(self.x_data[i])):
+                if self.vel_type == 0:
                     # Use EX Euler method to calculate next position
-                    self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], 0)
-                    self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], 0)
-                    # use the boundary condition above
-                    self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
-        elif self.vel_type == 1:
-            for i in range(len(self.x_data)):
-                for n in range(len(self.x_data[i])):
+                    self.x_data[i][n] = self.ex_euler(self.x_data[i][n], 0)
+                    self.y_data[i][n] = self.ex_euler(self.y_data[i][n], 0)
+                elif self.vel_type == 1:
                     # Confirm what field should each particle be in
                     field_x = math.ceil((self.x_data[i][n] - self.x_min) / ((self.x_max - self.x_min) / 32)) - 1
                     field_y = math.ceil((self.y_data[i][n] - self.y_min) / ((self.x_max - self.x_min) / 32)) - 1
                     # Use EX Euler method to calculate next position
-                    self.x_data[i][n] = self.EX_Euler_method(self.x_data[i][n], self.vel_field[field_x][field_y][0])
-                    self.y_data[i][n] = self.EX_Euler_method(self.y_data[i][n], self.vel_field[field_x][field_y][1])
-                    # use the boundary condition above
-                    self.x_data[i][n], self.y_data[i][n] = self.BC(self.x_data[i][n], self.y_data[i][n])
+                    self.x_data[i][n] = self.ex_euler(self.x_data[i][n], self.vel_field[field_x][field_y][0])
+                    self.y_data[i][n] = self.ex_euler(self.y_data[i][n], self.vel_field[field_x][field_y][1])
+                # use the boundary condition above
+                self.x_data[i][n], self.y_data[i][n] = self.bc(self.x_data[i][n], self.y_data[i][n])
 
     # the visualization of particle form, by The Kite
     def show_particle_form(self):
@@ -222,7 +218,7 @@ class TaskA(object):
         plt.show()
 
     # show 1D form if self.con == 1, by Ziqing and Zsolt
-    def show_1D_form(self, j):
+    def show_1d_form(self, j):
         ivl_grid_x = (self.x_max - self.x_min) / self.Nx
         # data0 is set to count and save the number of red particles and blue particles
         data0 = np.zeros((self.Nx, 2))
@@ -296,12 +292,12 @@ class TaskA(object):
                 for j in range(int(self.time_max / (2 * self.h))):
                     self.go_a_step()
                 # show the 1D diagram when t = time_max / 2
-                self.show_1D_form(i)
+                self.show_1d_form(i)
             plt.show()
 
 
 # GUI for input the initial condition by William and George
-class GUI(object):
+class GUI:
     def __init__(self):
         # generate the window
         self.window = tk.Tk()
@@ -393,22 +389,21 @@ class GUI(object):
         self.r_y = ''
         self.plot_type = 0
         self.con = 0
-        
-        #Add in the default values so they are visible and can be edited in GUI
-        self.xmininp.insert(0,'-1')
-        self.xmaxinp.insert(0,'1')
-        self.ymininp.insert(0,'-1')
-        self.ymaxinp.insert(0,'1')
-        self.diffinp.insert(0,'0.01')
-        self.timeinp.insert(0,'0.4')
-        self.stepinp.insert(0,'0.005')
-        self.spillxinp.insert(0,'0')
-        self.spillyinp.insert(0,'0')
-        self.spill_radinp.input(0,'0.1')
-        self.Nxinp.insert(0,'64')
-        self.Nyinp.insert(0,'64')
-        self.Npinp.insert(0,'65536')
-      
+
+        # Add in the default values so they are visible and can be edited in GUI
+        self.xmininp.insert(0, '-1')
+        self.xmaxinp.insert(0, '1')
+        self.ymininp.insert(0, '-1')
+        self.ymaxinp.insert(0, '1')
+        self.diffinp.insert(0, '0.01')
+        self.timeinp.insert(0, '0.4')
+        self.stepinp.insert(0, '0.005')
+        self.spillxinp.insert(0, '0')
+        self.spillyinp.insert(0, '0')
+        self.spill_radinp.insert(0, '0.1')
+        self.Nxinp.insert(0, '64')
+        self.Nyinp.insert(0, '64')
+        self.Npinp.insert(0, '65536')
 
     # for the behave after click 'submit' button
     def get_val(self):
