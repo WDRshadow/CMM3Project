@@ -43,6 +43,10 @@ class TaskA:
         self.vel_field = None
         # for temp error reference data saver
         self.p1 = None
+        # data0 is set to count and save the number of red particles and blue particles in TaskD
+        self.data0 = np.zeros((self.Nx, self.Ny, 2))
+        # data is set to figure the proportion of blue particles in each grid in TaskD
+        self.data = np.zeros((self.Nx, self.Ny))
 
     # setup the velocity field
     def velocity_field_setup(self):
@@ -77,7 +81,19 @@ class TaskA:
                     self.x_data[0].append(tx)
                     self.y_data[0].append(ty)
             elif self.con == 1:
+                self.D = 0.1
                 if tx < 0:
+                    self.x_data[1].append(tx)
+                    self.y_data[1].append(ty)
+                else:
+                    self.x_data[0].append(tx)
+                    self.y_data[0].append(ty)
+            elif self.con == 2:
+                self.D = 0.1
+                self.r_x = 0.4
+                self.r_y = 0.4
+                self.r = 0.1
+                if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
                     self.x_data[1].append(tx)
                     self.y_data[1].append(ty)
                 else:
@@ -128,7 +144,7 @@ class TaskA:
         plt.scatter(self.x_data[1], self.y_data[1], s=1, c='b')
         plt.scatter(self.x_data[0], self.y_data[0], s=1, c='r')
         # set the layout of axis and title
-        plt.title("2D problem", fontname='Arial', fontsize=30, weight='bold')
+        plt.title("Particle Form", fontname='Arial', fontsize=30, weight='bold')
         plt.xlabel("x", fontname='Arial', fontsize=20, weight='bold')
         plt.ylabel("y", fontname='Arial', fontsize=20, weight='bold')
         plt.xlim([self.x_min, self.x_max])
@@ -157,9 +173,9 @@ class TaskA:
         for i in range(len(self.x_data)):
             # to locate which grid is the new particle in and add it to data0[i]
             for n in range(len(self.x_data[i])):
-                ivl_xs = math.ceil(self.Nx - ((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1)
-                ivl_ys = math.ceil(((self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1)
-                data0[ivl_xs][ivl_ys][i] += 1
+                ivl_ys = math.ceil((self.Ny - (self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1)
+                ivl_xs = math.ceil(((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1)
+                data0[ivl_ys][ivl_xs][i] += 1
         # transfer the data0 into data by calculating the proportion of blue particles in each grid
         for i in range(self.Nx):
             for j in range(self.Ny):
@@ -175,7 +191,36 @@ class TaskA:
         # pass in data and create the heatmap
         sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=colors)
         # set the layout of axis and title
-        plt.title("2D problem", fontname='Arial', fontsize=30, weight='bold')
+        plt.title("Grid Form", fontname='Arial', fontsize=30, weight='bold')
+        sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
+        sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
+        plt.axis('off')
+        # show
+        plt.show()
+
+    def update(self):
+        ivl_grid_y = (self.y_max - self.y_min) / self.Ny
+        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
+        # calculate the data0 of grid
+        for i in range(len(self.x_data)):
+            # to locate which grid is the new particle in and add it to data0[i]
+            for n in range(len(self.x_data[i])):
+                ivl_ys = math.ceil((self.Ny - (self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1)
+                ivl_xs = math.ceil(((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1)
+                self.data0[ivl_ys][ivl_xs][i] += 1
+        for i in range(self.Nx):
+            for j in range(self.Ny):
+                if self.data0[i][j][1] / (self.data0[i][j][0] + self.data0[i][j][1]) > 0.3:
+                    self.data[i][j] = 1
+
+    # mark the trace of concentration in which the value>=0.3, by The Kite
+    def TaskD_mark(self):
+        self.update()
+        # the defination of colorbar of grid form
+        # pass in data and create the heatmap
+        sns_plot = sns.heatmap(self.data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
+        # set the layout of axis and title
+        plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
         sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
         sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
         plt.axis('off')
@@ -219,6 +264,15 @@ class TaskA:
         if j == 2:
             plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='orange',
                      label='Np={},run3'.format(self.Np))
+            plt.legend()
+        if j == 3:
+            reference = np.loadtxt('reference_solution_1D.dat')
+            r_x = []
+            r_y = []
+            for i in range(len(reference)):
+                r_x.append(reference[i][0])
+                r_y.append(reference[i][1])
+            plt.plot(r_x, r_y, color='black', label='reference')
             plt.legend()
 
     # setup the reference solution of 1D problem
@@ -279,18 +333,51 @@ class TaskA:
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
                     self.show_grid()
+            elif self.plot_type == 2:
+                self.TaskD_mark()
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    self.TaskD_mark()
+
         # if con == 1, means 1D problem
         elif self.con == 1:
             if self.error_type == 0:
-                for i in range(3):
-                    # setup the init list of particles for 3 times
+                if self.plot_type == 0:
                     self.setup()
+                    # show the first graph when t = 0
+                    self.show_particle_form()
                     # cycle in Classic Euler Method step by step
-                    for j in range(int(self.time_max / (2 * self.h))):
+                    for i in range(int(self.time_max / self.h)):
                         self.go_a_step()
-                    # show the 1D diagram when t = time_max / 2
-                    self.show_1d_form(i)
-                plt.show()
+                        self.show_particle_form()
+                    # the visualization of grid form
+                elif self.plot_type == 1:
+                    self.setup()
+                    # show the first graph when t = 0, data0 and data
+                    self.show_grid()
+                    # cycle in Classic Euler Method step by step
+                    for i in range(int(self.time_max / self.h)):
+                        self.go_a_step()
+                        self.show_grid()
+                elif self.plot_type == 2:
+                    self.setup()
+                    self.TaskD_mark()
+                    for i in range(int(self.time_max / self.h)):
+                        self.go_a_step()
+                        self.TaskD_mark()
+                elif self.plot_type == 3:
+                    for i in range(4):
+                        if i < 3:
+                            # setup the init list of particles for 3 times
+                            self.setup()
+                            # cycle in Classic Euler Method step by step
+                            for j in range(int(self.time_max / self.h)):
+                                self.go_a_step()
+                                if j * self.h == 0.2:
+                                    break
+                            # show the 1D diagram when t = time_max / 2
+                        self.show_1d_form(i)
+                    plt.show()
             elif self.error_type == 1:
                 # import reference data
                 self.reference_data_setup()
@@ -326,6 +413,31 @@ class TaskA:
                         self.go_a_step()
                     y_error.append(self.root_mean_square_error())
                 show_error(x, y_error, x_type)
+        # if con == 0, means TaskD
+        elif self.con == 2:
+            # setup the init list of particles
+            self.setup()
+            # the visualization of particle form
+            if self.plot_type == 0:
+                # show the first graph when t = 0
+                self.show_particle_form()
+                # cycle in Classic Euler Method step by step
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    self.show_particle_form()
+                # the visualization of grid form
+            elif self.plot_type == 1:
+                # show the first graph when t = 0, data0 and data
+                self.show_grid()
+                # cycle in Classic Euler Method step by step
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    self.show_grid()
+            elif self.plot_type == 2:
+                self.TaskD_mark()
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    self.TaskD_mark()
 
 
 # plotting to show the relationship between the global error with different Np
@@ -336,15 +448,14 @@ def show_error(x, y, t):
         popt, pcov = curve_fit(func, x, y)
         a = popt[0]
         b = popt[1]
-        print('\nFit E with Np in E = a * Np ^ b, where')
-        print('coefficient a=', a)
-        print('coefficient b=', b)
+        print('\ncoefficient a:', a)
+        print('coefficient b:', b)
         y1 = func(x, a, b)
         plt.plot(x, y1, 'r', label='polyfit values')
     plt.xlabel(t, fontsize=20)
-    plt.ylabel('E', fontsize=20)
+    plt.ylabel('Root mean square error', fontsize=20)
     plt.legend(loc=1)
-    plt.title("Root mean square error", fontname='Arial', fontsize=30, weight='bold')
+    plt.title("Globe Error ", fontname='Arial', fontsize=30, weight='bold')
     plt.show()
 
 
@@ -397,7 +508,8 @@ class GUI:
         self.init_condition = Combobox(state="readonly")
         self.init_condition["values"] = (
             "For 2D Problem",
-            "For 1D Problem"
+            "For 1D Problem",
+            "For simulation in TaskD"
         )
         self.init_condition.current(0)
         self.veltype = Combobox(state="readonly")
@@ -409,7 +521,9 @@ class GUI:
         self.plot = Combobox(state="readonly")
         self.plot["values"] = (
             "Particle",
-            "Grid"
+            "Grid",
+            "Mark the trace of >=3 value(Task D needs this)",
+            "Plot the solution at t=0.2(only for 1D)"
         )
         self.plot.current(0)
         self.error_control = Combobox(state="readonly")
