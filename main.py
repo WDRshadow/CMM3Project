@@ -8,79 +8,41 @@ import seaborn as sns
 import tkinter as tk
 from tkinter.ttk import *
 from tkinter import messagebox
+from sklearn.metrics import mean_squared_error
+from scipy.optimize import curve_fit
 
 
 # for easier setting, I put all the code into a class
 class TaskA:
     def __init__(self):
-        # ----------------------------------------
-        # default conditions
-        # time set, "h" is a step time
-        self.time_max = 0.4
-        self.h = 0.0005
-        # diffusivity
-        self.D = 0.01
-        # domain size
-        self.x_min = -1
-        self.x_max = 1
-        self.y_min = -1
-        self.y_max = 1
-        # number of axial gridlines and total grids
-        self.Nx = 64
-        self.Ny = 64
-        # number of particles
-        self.Np = 65536
-        # init velocity
-        self.vel_type = 0
-        # blue particles location / radius and Center of circle
-        self.r = 0.3
-        self.r_x = 0
-        self.r_y = 0
-        # initial condition, 0 means 2D problem and 1 means 1D problem
-        self.con = 0
-        # plot type, 0 means particle form, 1 means grid
-        self.plot_type = 0
-        # -----------------------------------------
-        # for temp particle position data save
-        # data[0] is the value of red particle, [1] is the value for blue one
-        self.x_data = None
-        self.y_data = None
-        # init velocity field data saver, include x, y and velocity
-        self.vel_field = None
-        # for class GUI temp save
-        self.gui = None
-
-    # import initial conditions
-    def imp_val(self):
-        if len(self.gui.x_min) != 0:
-            self.x_min = float(self.gui.x_min)
-        if len(self.gui.x_max) != 0:
-            self.x_max = float(self.gui.x_max)
-        if len(self.gui.y_min) != 0:
-            self.y_min = float(self.gui.y_min)
-        if len(self.gui.y_max) != 0:
-            self.y_max = float(self.gui.y_max)
-        if len(self.gui.D) != 0:
-            self.D = float(self.gui.D)
-        if len(self.gui.time_max) != 0:
-            self.time_max = float(self.gui.time_max)
-        if len(self.gui.h) != 0:
-            self.h = float(self.gui.h)
-        if len(self.gui.Nx) != 0:
-            self.Nx = int(self.gui.Nx)
-        if len(self.gui.Ny) != 0:
-            self.Ny = int(self.gui.Ny)
-        if len(self.gui.Np) != 0:
-            self.Np = int(self.gui.Np)
-        if len(self.gui.r) != 0:
-            self.r = float(self.gui.r)
-        if len(self.gui.r_x) != 0:
-            self.r_x = float(self.gui.r_x)
-        if len(self.gui.r_y) != 0:
-            self.r_y = float(self.gui.r_y)
+        # initial function, use GUI class to generate the initial values
+        self.gui = GUI()
+        self.gui.main()
+        self.x_min = float(self.gui.x_min)
+        self.x_max = float(self.gui.x_max)
+        self.y_min = float(self.gui.y_min)
+        self.y_max = float(self.gui.y_max)
+        self.D = float(self.gui.D)
+        self.time_max = float(self.gui.time_max)
+        self.h = float(self.gui.h)
+        self.Nx = int(self.gui.Nx)
+        self.Ny = int(self.gui.Ny)
+        self.Np = int(self.gui.Np)
+        self.r = float(self.gui.r)
+        self.r_x = float(self.gui.r_x)
+        self.r_y = float(self.gui.r_y)
         self.vel_type = self.gui.vel_type
         self.plot_type = self.gui.plot_type
         self.con = self.gui.con
+        self.error_type = self.gui.error_type
+        del self.gui
+        # for temp particle position data save
+        self.x_data = None
+        self.y_data = None
+        # init velocity field data saver
+        self.vel_field = None
+        # for temp error reference data saver
+        self.p1 = None
 
     # setup the velocity field
     def velocity_field_setup(self):
@@ -201,7 +163,10 @@ class TaskA:
         # transfer the data0 into data by calculating the proportion of blue particles in each grid
         for i in range(self.Nx):
             for j in range(self.Ny):
-                data[i][j] = data0[i][j][1] / (data0[i][j][0] + data0[i][j][1])
+                if data0[i][j][0] + data0[i][j][1] == 0:
+                    data[i][j] = 0
+                else:
+                    data[i][j] = data0[i][j][1] / (data0[i][j][0] + data0[i][j][1])
         # the defination of colorbar of grid form
         colors1 = [(r, g, b) for (r, g, b) in zip(np.linspace(1, 0.8, 7), np.linspace(0, 0, 7), np.linspace(0, 0.9, 7))]
         colors2 = [(r, g, b) for (r, g, b) in zip(np.linspace(0.7, 0, 6), np.linspace(0, 1, 6), np.linspace(1, 0, 6))]
@@ -232,7 +197,10 @@ class TaskA:
                 data0[ivl_xs][i] += 1
         # transfer the data0 into data by calculating the proportion of blue particles in each grid
         for i in range(self.Nx):
-            data[i] = data0[i][1] / (data0[i][0] + data0[i][1])
+            if data0[i][0] + data0[i][1] == 0:
+                data[i] = 0
+            else:
+                data[i] = data0[i][1] / (data0[i][0] + data0[i][1])
         plt.title("1D problem", fontname='Arial', fontsize=30, weight='bold')
         plt.xlabel("x", fontsize=20)
         plt.ylabel("Ф", fontsize=20)
@@ -253,13 +221,41 @@ class TaskA:
                      label='Np={},run3'.format(self.Np))
             plt.legend()
 
+    # setup the reference solution of 1D problem
+    def reference_data_setup(self):
+        reference_data = np.loadtxt('reference_solution_1D.dat')
+        x = []
+        y = []
+        for i in range(len(reference_data)):
+            x.append(reference_data[i][0])
+            y.append(reference_data[i][1])
+        self.p1 = np.poly1d(np.polyfit(x, y, 20))
+
+    # to count the root mean square error
+    def root_mean_square_error(self):
+        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
+        # data0 is set to count and save the number of red particles and blue particles
+        data0 = np.zeros((self.Nx, 2))
+        # data is set to figure the proportion of blue particles in each grid
+        data = np.zeros(self.Nx)
+        # calculate the data0 of grid
+        for i in range(len(self.x_data)):
+            # to locate which grid is the new particle in and add it to data0[i]
+            for n in range(len(self.x_data[i])):
+                ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
+                data0[ivl_xs][i] += 1
+        # transfer the data0 into data by calculating the proportion of blue particles in each grid
+        x = []
+        for i in range(self.Nx):
+            if data0[i][0] + data0[i][1] == 0:
+                data[i] = 0
+            else:
+                data[i] = data0[i][1] / (data0[i][0] + data0[i][1])
+            x.append(i * ivl_grid_x + ivl_grid_x / 2 - 1)
+        return np.sqrt(mean_squared_error(data, self.p1(x)))
+
     # main code for this class
     def main(self):
-        # use a GUI instance for input initial conditions
-        self.gui = GUI()
-        self.gui.main()
-        self.imp_val()
-        del self.gui
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
@@ -285,15 +281,75 @@ class TaskA:
                     self.show_grid()
         # if con == 1, means 1D problem
         elif self.con == 1:
-            for i in range(3):
-                # setup the init list of particles for 3 times
-                self.setup()
-                # cycle in Classic Euler Method step by step
-                for j in range(int(self.time_max / (2 * self.h))):
-                    self.go_a_step()
-                # show the 1D diagram when t = time_max / 2
-                self.show_1d_form(i)
-            plt.show()
+            if self.error_type == 0:
+                for i in range(3):
+                    # setup the init list of particles for 3 times
+                    self.setup()
+                    # cycle in Classic Euler Method step by step
+                    for j in range(int(self.time_max / (2 * self.h))):
+                        self.go_a_step()
+                    # show the 1D diagram when t = time_max / 2
+                    self.show_1d_form(i)
+                plt.show()
+            elif self.error_type == 1:
+                # import reference data
+                self.reference_data_setup()
+                # init x and y_error for temp save
+                x_type = 'Np'
+                x = []
+                y_error = []
+                # get globe error in different Np when h == 0.05
+                for i in range(18):
+                    self.h = 0.05
+                    self.Np = 2 ** i
+                    x.append(self.Np)
+                    # setup init list of particles
+                    self.setup()
+                    # cycle in Classic Euler Method step by step
+                    for j in range(int(self.time_max / (2 * self.h))):
+                        self.go_a_step()
+                    y_error.append(self.root_mean_square_error())
+                show_error(x, y_error, x_type)
+                # init x and y_error for temp save
+                x_type = 'h'
+                x = []
+                y_error = []
+                # get globe error in different h when Np == 1024
+                for i in np.arange(0.05, 0.2, 0.005):
+                    self.Np = 1024
+                    self.h = i
+                    x.append(i)
+                    # setup init list of particles
+                    self.setup()
+                    # cycle in Classic Euler Method step by step
+                    for j in range(int(self.time_max / (2 * self.h))):
+                        self.go_a_step()
+                    y_error.append(self.root_mean_square_error())
+                show_error(x, y_error, x_type)
+
+
+# plotting to show the relationship between the global error with different Np
+def show_error(x, y, t):
+    plt.scatter(x, y, c='blue', label='original values')
+    if t == 'Np':
+        # Nonlinear least squares fitting
+        popt, pcov = curve_fit(func, x, y)
+        a = popt[0]
+        b = popt[1]
+        print('\ncoefficient a:', a)
+        print('coefficient b:', b)
+        y1 = func(x, a, b)
+        plt.plot(x, y1, 'r', label='polyfit values')
+    plt.xlabel(t, fontsize=20)
+    plt.ylabel('Root mean square error', fontsize=20)
+    plt.legend(loc=1)
+    plt.title("Globe Error ", fontname='Arial', fontsize=30, weight='bold')
+    plt.show()
+
+
+# error form for fit
+def func(N, a, b):
+    return a * N ** b
 
 
 # GUI for input the initial condition by William and George
@@ -321,6 +377,7 @@ class GUI:
         self.init_condition_lab = tk.Label(text='Initial condition')
         self.veltype_lab = tk.Label(text='Velocity Type')
         self.plot_lab = tk.Label(text='Plot type')
+        self.error_lab = tk.Label(text='Error simulations type, For 1D')
 
         # add import interface
         self.xmininp = tk.Entry()
@@ -354,14 +411,20 @@ class GUI:
             "Grid"
         )
         self.plot.current(0)
+        self.error_control = Combobox(state="readonly")
+        self.error_control["values"] = (
+            "Normal Type",
+            "Error simulations Type"
+        )
+        self.error_control.current(0)
 
         input_var_lab = [self.xminlab, self.xmaxlab, self.yminlab, self.ymaxlab, self.difflab, self.timelab,
                          self.steplab, self.spillxlab, self.spillylab, self.spill_radlab, self.Nx_lab, self.Ny_lab,
-                         self.Np_lab, self.init_condition_lab, self.veltype_lab, self.plot_lab]
+                         self.Np_lab, self.init_condition_lab, self.veltype_lab, self.plot_lab, self.error_lab]
 
         input_var_entries = [self.xmininp, self.xmaxinp, self.ymininp, self.ymaxinp, self.diffinp, self.timeinp,
                              self.stepinp, self.spillxinp, self.spillyinp, self.spill_radinp, self.Nxinp, self.Nyinp,
-                             self.Npinp, self.init_condition, self.veltype, self.plot]
+                             self.Npinp, self.init_condition, self.veltype, self.plot, self.error_control]
 
         for i in range(len(input_var_lab)):
             input_var_lab[i].grid(row=i, column=0, padx=5, pady=5, sticky='NW')
@@ -389,6 +452,7 @@ class GUI:
         self.r_y = ''
         self.plot_type = 0
         self.con = 0
+        self.error_type = 0
 
         # Add in the default values so they are visible and can be edited in GUI
         self.xmininp.insert(0, '-1')
@@ -400,7 +464,7 @@ class GUI:
         self.stepinp.insert(0, '0.005')
         self.spillxinp.insert(0, '0')
         self.spillyinp.insert(0, '0')
-        self.spill_radinp.insert(0, '0.1')
+        self.spill_radinp.insert(0, '0.3')
         self.Nxinp.insert(0, '64')
         self.Nyinp.insert(0, '64')
         self.Npinp.insert(0, '65536')
@@ -423,6 +487,7 @@ class GUI:
         self.vel_type = self.veltype.current()
         self.plot_type = self.plot.current()
         self.con = self.init_condition.current()
+        self.error_type = self.error_control.current()
         # success message after click button
         messagebox.showinfo("Submit", "Submit successfully")
         self.window.destroy()
