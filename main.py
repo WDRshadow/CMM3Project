@@ -336,14 +336,15 @@ def show_error(x, y, t):
         popt, pcov = curve_fit(func, x, y)
         a = popt[0]
         b = popt[1]
-        print('\ncoefficient a:', a)
-        print('coefficient b:', b)
+        print('\nFit E with Np in E = a * Np ^ b, where')
+        print('coefficient a=', a)
+        print('coefficient b=', b)
         y1 = func(x, a, b)
         plt.plot(x, y1, 'r', label='polyfit values')
     plt.xlabel(t, fontsize=20)
-    plt.ylabel('Root mean square error', fontsize=20)
+    plt.ylabel('E', fontsize=20)
     plt.legend(loc=1)
-    plt.title("Globe Error ", fontname='Arial', fontsize=30, weight='bold')
+    plt.title("Root mean square error", fontname='Arial', fontsize=30, weight='bold')
     plt.show()
 
 
