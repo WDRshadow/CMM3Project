@@ -4,7 +4,7 @@
 
 This is a project storage for 2021 Year3 Computational Method and Modeling 3 Group 16 Work in the University of Edinburgh.
 
-To know more about this project, you can watch lecture7.pdy slide on Learn Page.
+To know more about this project, you can watch lecture7.pdf slide on Learn Page.
 
 The [main.py][1] is our main code. The file contains reference demos written by the team members and other groups.
 
@@ -37,7 +37,7 @@ In E VS Np simulation, we use method to fix the function E = a * Np ^ b and get 
 
 **Tasks C. Develop a user interface**
   
-In Task C, we create a GUI window by using tkinter lib. We create 15 interface including initial condition, max time, step time, domain range, diffusivity, number of grids, number of particles, velocity type, radius and Center of circle of blue area and plot type.
+In Task C, we create a GUI window by using tkinter lib. We create 14 interfaces including initial condition, max time, step time, domain range, diffusivity, number of grids, number of particles, velocity type, radius and Center of circle of blue area.
 
 To make it easy to use for several times, we set up 5 initial conditions, including 2D problem show in particle form and grid, 1D problem and its simulation, Task D simulation. Each initial condition has its own default condition value. For each task, users just need to select initial condition and click "submit" button if they use the default conditions.
 
