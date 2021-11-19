@@ -146,10 +146,7 @@ class GUI:
             self.window2.mainloop()
 
         if self.con == 3:
-            title = tk.Label(text="Submit successfully")
-            title.grid(row=1, column=0, padx=5, pady=5, sticky='NW')
             self.get_val_3()
-            self.window2.mainloop()
 
         if self.con == 4:
             input_var_lab = [self.timelab, self.steplab, self.Nx_lab, self.Ny_lab, self.Np_lab, self.veltype_lab]
