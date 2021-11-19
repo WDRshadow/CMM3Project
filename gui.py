@@ -7,21 +7,21 @@ from tkinter import messagebox
 class GUI:
     def __init__(self):
         # init condition, for temp save
-        self.time_max = 0.4
-        self.h = 0.0005
-        self.D = 0.01
-        self.x_min = -1
-        self.x_max = 1
-        self.y_min = -1
-        self.y_max = 1
-        self.Nx = 64
-        self.Ny = 64
-        self.Np = 65536
-        self.vel_type = 0
+        self.time_max = None
+        self.h = None
+        self.D = None
+        self.x_min = None
+        self.x_max = None
+        self.y_min = None
+        self.y_max = None
+        self.Nx = None
+        self.Ny = 1
+        self.Np = None
+        self.vel_type = None
         self.r = 0.3
         self.r_x = 0
         self.r_y = 0
-        self.con = 0
+        self.con = None
 
         # loop the window1
         self.window = tk.Tk()
@@ -111,7 +111,7 @@ class GUI:
             self.ymaxinp.insert(0, '1')
             self.diffinp.insert(0, '0.01')
             self.timeinp.insert(0, '0.4')
-            self.stepinp.insert(0, '0.005')
+            self.stepinp.insert(0, '0.0005')
             self.spillxinp.insert(0, '0')
             self.spillyinp.insert(0, '0')
             self.spill_radinp.insert(0, '0.3')
@@ -139,7 +139,7 @@ class GUI:
             self.ymaxinp.insert(0, '1')
             self.diffinp.insert(0, '0.1')
             self.timeinp.insert(0, '0.4')
-            self.stepinp.insert(0, '0.005')
+            self.stepinp.insert(0, '0.0005')
             self.Nxinp.insert(0, '64')
             self.Npinp.insert(0, '65536')
             self.veltype.current(0)
@@ -159,7 +159,7 @@ class GUI:
             button.grid(row=len(input_var_lab), column=3, padx=5, pady=5, sticky='N')
             # Add in the default values so they are visible and can be edited in GUI
             self.timeinp.insert(0, '0.4')
-            self.stepinp.insert(0, '0.005')
+            self.stepinp.insert(0, '0.0005')
             self.Nxinp.insert(0, '64')
             self.Nyinp.insert(0, '64')
             self.Npinp.insert(0, '150000')
@@ -212,6 +212,8 @@ class GUI:
         self.Nx = 64
         self.Np = 65536
         self.vel_type = 0
+        # success message after click button
+        messagebox.showinfo("Submit", "Submit successfully")
         self.window2.destroy()
 
     def get_val_4(self):

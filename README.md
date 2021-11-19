@@ -37,7 +37,7 @@ In E VS Np simulation, we use method to fix the function E = a * Np ^ b and get 
 
 **Tasks C. Develop a user interface**
   
-In Task C, we create a GUI window by using tkinter lib. We create 14 interfaces including initial condition, max time, step time, domain range, diffusivity, number of grids, number of particles, velocity type, radius and Center of circle of blue area.
+In Task C, we create a GUI window by using tkinter lib. We create 15 interfaces including initial condition, max time, step time, domain range, diffusivity, number of grids, number of particles, velocity type, radius and Center of circle of blue area.
 
 To make it easy to use for several times, we set up 5 initial conditions, including 2D problem show in particle form and grid, 1D problem and its simulation, Task D simulation. Each initial condition has its own default condition value. For each task, users just need to select initial condition and click "submit" button if they use the default conditions.
 
