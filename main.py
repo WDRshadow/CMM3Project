@@ -345,7 +345,7 @@ class TaskA:
             x = []
             y_error = []
             # get globe error in different h when Np == 1024
-            for i in np.arange(0.05, 0.2, 0.005):  # the range of h
+            for i in np.arange(0.0005, 0.2, 0.0005):  # the range of h
                 self.Np = 1024  # single Np
                 self.h = i
                 x.append(i)
