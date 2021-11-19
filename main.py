@@ -30,7 +30,6 @@ class TaskA:
         self.r_x = float(self.gui.r_x)
         self.r_y = float(self.gui.r_y)
         self.vel_type = self.gui.vel_type
-        self.plot_type = self.gui.plot_type
         self.con = self.gui.con
         del self.gui
         # for temp particle position data save
@@ -59,7 +58,7 @@ class TaskA:
         # use np.random to init the particles
         self.x_data = [[], []]
         self.y_data = [[], []]
-        if self.con == 3:
+        if self.con == 4:
             self.D = 0.1
             self.r_x = 0.4
             self.r_y = 0.4
@@ -69,14 +68,14 @@ class TaskA:
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
-            if self.con == 0 or self.con == 3:
+            if self.con == 0 or self.con == 1 or self.con == 4:
                 if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
                     self.x_data[1].append(tx)
                     self.y_data[1].append(ty)
                 else:
                     self.x_data[0].append(tx)
                     self.y_data[0].append(ty)
-            elif self.con == 1 or self.con == 2:
+            elif self.con == 2 or self.con == 3:
                 self.D = 0.1
                 if tx < 0:
                     self.x_data[1].append(tx)
@@ -290,29 +289,31 @@ class TaskA:
         # setup the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
-        # if con == 0, means 2D problem
+
+        # if con == 0, means 2D problem, the visualization of particle form
         if self.con == 0:
             # setup the init list of particles
             self.setup()
-            # the visualization of particle form
-            if self.plot_type == 0:
-                # show the first graph when t = 0
+            # show the first graph when t = 0
+            self.show_particle_form()
+            # cycle in Classic Euler Method step by step
+            for i in range(int(self.time_max / self.h)):
+                self.go_a_step()
                 self.show_particle_form()
-                # cycle in Classic Euler Method step by step
-                for i in range(int(self.time_max / self.h)):
-                    self.go_a_step()
-                    self.show_particle_form()
-                # the visualization of grid form
-            elif self.plot_type == 1:
-                # show the first graph when t = 0, data0 and data
-                self.show_grid()
-                # cycle in Classic Euler Method step by step
-                for i in range(int(self.time_max / self.h)):
-                    self.go_a_step()
-                    self.show_grid()
 
-        # if con == 1, means 1D problem
-        elif self.con == 1:
+        # if con == 1, means 2D problem, the visualization of grid form
+        if self.con == 1:
+            # setup the init list of particles
+            self.setup()
+            # show the first graph when t = 0, data0 and data
+            self.show_grid()
+            # cycle in Classic Euler Method step by step
+            for i in range(int(self.time_max / self.h)):
+                self.go_a_step()
+                self.show_grid()
+
+        # if con == 2, means 1D problem
+        elif self.con == 2:
             for i in range(4):
                 if i < 3:
                     # setup the init list of particles for 3 times
@@ -326,8 +327,8 @@ class TaskA:
                 self.show_1d_form(i)
             plt.show()
 
-        # if con == 2, means 1D error simulation
-        elif self.con == 2:
+        # if con == 3, means 1D error simulation
+        elif self.con == 3:
             # import reference data
             p1 = reference_data_setup()
             # init x and y_error for temp save
@@ -363,8 +364,8 @@ class TaskA:
                 y_error.append(self.root_mean_square_error(p1))
             show_error(x, y_error, x_type)
 
-        # if con == 3, means TaskD
-        elif self.con == 3:
+        # if con == 4, means TaskD
+        elif self.con == 4:
             # setup the init list of particles
             self.setup()
             # data is set to figure the proportion of blue particles in each grid in TaskD

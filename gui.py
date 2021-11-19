@@ -27,7 +27,6 @@ class GUI:
         self.Np_lab = tk.Label(text='Number of particles')
         self.init_condition_lab = tk.Label(text='Initial condition')
         self.veltype_lab = tk.Label(text='Velocity Type')
-        self.plot_lab = tk.Label(text='Plot type (2D Only)')
 
         # add import interface
         self.xmininp = tk.Entry()
@@ -45,7 +44,8 @@ class GUI:
         self.Npinp = tk.Entry()
         self.init_condition = Combobox(state="readonly")
         self.init_condition["values"] = (
-            "For 2D Problem",
+            "For 2D Problem Particle Form",
+            "For 2D Problem Grid",
             "For 1D Problem",
             "For 1D Problem error simulation",
             "For simulation in TaskD"
@@ -57,20 +57,14 @@ class GUI:
             "read from file"
         )
         self.veltype.current(0)
-        self.plot = Combobox(state="readonly")
-        self.plot["values"] = (
-            "Particle",
-            "Grid"
-        )
-        self.plot.current(0)
 
         input_var_lab = [self.xminlab, self.xmaxlab, self.yminlab, self.ymaxlab, self.difflab, self.timelab,
                          self.steplab, self.spillxlab, self.spillylab, self.spill_radlab, self.Nx_lab, self.Ny_lab,
-                         self.Np_lab, self.init_condition_lab, self.veltype_lab, self.plot_lab]
+                         self.Np_lab, self.init_condition_lab, self.veltype_lab]
 
         input_var_entries = [self.xmininp, self.xmaxinp, self.ymininp, self.ymaxinp, self.diffinp, self.timeinp,
                              self.stepinp, self.spillxinp, self.spillyinp, self.spill_radinp, self.Nxinp, self.Nyinp,
-                             self.Npinp, self.init_condition, self.veltype, self.plot]
+                             self.Npinp, self.init_condition, self.veltype]
 
         for i in range(len(input_var_lab)):
             input_var_lab[i].grid(row=i, column=0, padx=5, pady=5, sticky='NW')
@@ -130,7 +124,6 @@ class GUI:
         self.r_x = self.spillxinp.get()
         self.r_y = self.spillyinp.get()
         self.vel_type = self.veltype.current()
-        self.plot_type = self.plot.current()
         self.con = self.init_condition.current()
         # success message after click button
         messagebox.showinfo("Submit", "Submit successfully")
