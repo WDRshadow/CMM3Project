@@ -247,7 +247,7 @@ class TaskA:
             x.append(i * ivl_grid_x + ivl_grid_x / 2 - 1)
         return np.sqrt(mean_squared_error(data, p1(x)))
 
-    # mark the trace of concentration in which the value>=0.3, by The Kite
+    # mark the trace of concentration in which the value>=0.3
     def task_d_mark(self, data):
         ivl_grid_y = (self.y_max - self.y_min) / self.Ny
         ivl_grid_x = (self.x_max - self.x_min) / self.Nx
@@ -265,6 +265,34 @@ class TaskA:
                 if data0[i][j][0] + data0[i][j][1] == 0:
                     data[i][j] = 0
                 elif data0[i][j][1] / (data0[i][j][0] + data0[i][j][1]) > 0.3:
+                    data[i][j] = 1
+        # the defination of colorbar of grid form
+        # pass in data and create the heatmap
+        sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
+        # set the layout of axis and title
+        plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
+        sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
+        sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
+        plt.axis('off')
+        # show
+        plt.show()
+        return data
+
+    # taskE for simulation improvement
+    def task_E(self, data):
+        ivl_grid_y = (self.y_max - self.y_min) / self.Ny
+        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
+        # data0 is set to count and save the number of blue particles
+        data0 = np.zeros((self.Nx, self.Ny))
+        # calculate the data0 of grid
+        for n in range(len(self.x_data[1])):
+            ivl_ys = math.ceil((self.Ny - (self.y_data[1][n] - self.y_min) / ivl_grid_y) - 1)
+            ivl_xs = math.ceil(((self.x_data[1][n] - self.x_min) / ivl_grid_x) - 1)
+            data0[ivl_ys][ivl_xs] += 1
+        for i in range(self.Nx):
+            for j in range(self.Ny):
+                # self.Np/(self.Nx*self.Ny) is the average particle quantity in each grid
+                if data0[i][j]/(self.Np/(self.Nx*self.Ny)) > 0.3:
                     data[i][j] = 1
         # the defination of colorbar of grid form
         # pass in data and create the heatmap
@@ -366,7 +394,8 @@ class TaskA:
             data = self.task_d_mark(data)
             for i in range(int(self.time_max / self.h)):
                 self.go_a_step()
-                data = self.task_d_mark(data)
+                data = self.task_E(data)
+                # data = self.task_d_mark(data)
 
 
 # setup the reference solution of 1D problem
