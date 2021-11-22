@@ -35,12 +35,11 @@ class TaskA:
         self.x_data = None
         self.y_data = None
         # init velocity field data saver
-        self.vel_field = None
+        self.vel_field = np.zeros((32, 32, 2))
         # for temp error reference data saver
 
     # setup the velocity field
     def velocity_field_setup(self):
-        self.vel_field = np.zeros((32, 32, 2))
         # input the data from out side
         vel = np.loadtxt('velocityCMM3.dat')
         # calculate the length of each field
@@ -62,7 +61,7 @@ class TaskA:
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
-            if self.con == 0 or self.con == 1 or self.con == 4:
+            if self.con == 0 or self.con == 1 or self.con == 4 or self.con == 5:
                 if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
                     self.x_data[1].append(tx)
                     self.y_data[1].append(ty)
@@ -101,17 +100,14 @@ class TaskA:
     def go_a_step(self):
         for i in range(len(self.x_data)):
             for n in range(len(self.x_data[i])):
-                if self.vel_type == 0:
-                    # Use EX Euler method to calculate next position
-                    self.x_data[i][n] = self.ex_euler(self.x_data[i][n], 0)
-                    self.y_data[i][n] = self.ex_euler(self.y_data[i][n], 0)
-                elif self.vel_type == 1:
+                field_x, field_y = 0, 0
+                if self.vel_type == 1:
                     # Confirm what field should each particle be in
                     field_x = math.ceil((self.x_data[i][n] - self.x_min) / ((self.x_max - self.x_min) / 32)) - 1
                     field_y = math.ceil((self.y_data[i][n] - self.y_min) / ((self.x_max - self.x_min) / 32)) - 1
-                    # Use EX Euler method to calculate next position
-                    self.x_data[i][n] = self.ex_euler(self.x_data[i][n], self.vel_field[field_x][field_y][0])
-                    self.y_data[i][n] = self.ex_euler(self.y_data[i][n], self.vel_field[field_x][field_y][1])
+                # Use EX Euler method to calculate next position
+                self.x_data[i][n] = self.ex_euler(self.x_data[i][n], self.vel_field[field_x][field_y][0])
+                self.y_data[i][n] = self.ex_euler(self.y_data[i][n], self.vel_field[field_x][field_y][1])
                 # use the boundary condition above
                 self.x_data[i][n], self.y_data[i][n] = self.bc(self.x_data[i][n], self.y_data[i][n])
 
@@ -137,64 +133,38 @@ class TaskA:
         # show
         plt.show()
 
+    # calculate the percentage of each grid
+    def count_grid(self):
+        # count the percentage by histogram2d from NumPy
+        x_all = np.concatenate((self.x_data[0], self.x_data[1]))
+        y_all = np.concatenate((self.y_data[0], self.y_data[1]))
+        grid_step_x = (self.x_max - self.x_min)/self.Nx
+        grid_step_y = (self.y_max - self.y_min)/self.Ny
+        x_grid = np.arange(self.x_min, self.x_max + grid_step_x, grid_step_x)
+        y_grid = np.arange(self.y_min, self.y_max + grid_step_y, grid_step_y)
+        blue, x_edges, y_edges = np.histogram2d([-i for i in self.y_data[1]], self.x_data[1], bins=[x_grid, y_grid])
+        all_p, x_edges, y_edges = np.histogram2d([-i for i in y_all], x_all, bins=[x_grid, y_grid])
+        return np.divide(blue, all_p, out=np.zeros_like(blue), where=all_p != 0)
+
     # the visualization of grid form, by The Kite
     def show_grid(self):
-        # generate some initial conditions and data saver
-        # figure and save the interval of the gridlines
-        ivl_grid_y = (self.y_max - self.y_min) / self.Ny
-        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
-        # data0 is set to count and save the number of red particles and blue particles
-        data0 = np.zeros((self.Nx, self.Ny, 2))
-        # data is set to figure the proportion of blue particles in each grid
-        data = np.zeros((self.Nx, self.Ny))
-        # calculate the data0 of grid
-        for i in range(len(self.x_data)):
-            # to locate which grid is the new particle in and add it to data0[i]
-            for n in range(len(self.x_data[i])):
-                ivl_ys = math.ceil((self.Ny - (self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1)
-                ivl_xs = math.ceil(((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1)
-                data0[ivl_ys][ivl_xs][i] += 1
-        # transfer the data0 into data by calculating the proportion of blue particles in each grid
-        for i in range(self.Nx):
-            for j in range(self.Ny):
-                if data0[i][j][0] + data0[i][j][1] == 0:
-                    data[i][j] = 0
-                else:
-                    data[i][j] = data0[i][j][1] / (data0[i][j][0] + data0[i][j][1])
         # the defination of colorbar of grid form
         colors1 = [(r, g, b) for (r, g, b) in zip(np.linspace(1, 0.8, 7), np.linspace(0, 0, 7), np.linspace(0, 0.9, 7))]
         colors2 = [(r, g, b) for (r, g, b) in zip(np.linspace(0.7, 0, 6), np.linspace(0, 1, 6), np.linspace(1, 0, 6))]
         colors3 = [(r, g, b) for (r, g, b) in zip(np.linspace(0, 0, 7), np.linspace(0.7, 0, 7), np.linspace(0, 1, 7))]
         colors = colors1 + colors2 + colors3
         # pass in data and create the heatmap
-        sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=colors)
+        sns_plot = sns.heatmap(self.count_grid(), vmin=0, vmax=1, cmap=colors)
         # set the layout of axis and title
         plt.title("Grid Form", fontname='Arial', fontsize=30, weight='bold')
         sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
         sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-        plt.axis('off')
+        # plt.axis('off')
         # show
         plt.show()
 
-    # show 1D form if self.con == 1, by Ziqing and Zsolt
+    # show 1D form if self.con == 1
     def show_1d_form(self, j):
-        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
-        # data0 is set to count and save the number of red particles and blue particles
-        data0 = np.zeros((self.Nx, 2))
-        # data is set to figure the proportion of blue particles in each grid
-        data = np.zeros(self.Nx)
-        # calculate the data0 of grid
-        for i in range(len(self.x_data)):
-            # to locate which grid is the new particle in and add it to data0[i]
-            for n in range(len(self.x_data[i])):
-                ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
-                data0[ivl_xs][i] += 1
-        # transfer the data0 into data by calculating the proportion of blue particles in each grid
-        for i in range(self.Nx):
-            if data0[i][0] + data0[i][1] == 0:
-                data[i] = 0
-            else:
-                data[i] = data0[i][1] / (data0[i][0] + data0[i][1])
         plt.title("1D problem", fontname='Arial', fontsize=30, weight='bold')
         plt.xlabel("x", fontsize=20)
         plt.ylabel("Ф", fontsize=20)
@@ -203,15 +173,15 @@ class TaskA:
         plt.xticks([-1 + i * 0.5 for i in range(5)])
         plt.yticks([0 + i * 0.2 for i in range(6)])
         if j == 0:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='purple',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid(), color='purple',
                      label='Np={},run1'.format(self.Np))
             plt.legend()
         if j == 1:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='blue',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid(), color='blue',
                      label='Np={},run2'.format(self.Np))
             plt.legend()
         if j == 2:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], data, color='orange',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid(), color='orange',
                      label='Np={},run3'.format(self.Np))
             plt.legend()
         if j == 3:
@@ -225,85 +195,33 @@ class TaskA:
             plt.legend()
 
     # to count the root mean square error
-    def root_mean_square_error(self, p1):
-        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
-        # data0 is set to count and save the number of red particles and blue particles
-        data0 = np.zeros((self.Nx, 2))
-        # data is set to figure the proportion of blue particles in each grid
-        data = np.zeros(self.Nx)
-        # calculate the data0 of grid
-        for i in range(len(self.x_data)):
-            # to locate which grid is the new particle in and add it to data0[i]
-            for n in range(len(self.x_data[i])):
-                ivl_xs = math.ceil((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1
-                data0[ivl_xs][i] += 1
-        # transfer the data0 into data by calculating the proportion of blue particles in each grid
+    def count_error(self, p1):
+        data = self.count_grid()
         x = []
+        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
         for i in range(self.Nx):
-            if data0[i][0] + data0[i][1] == 0:
-                data[i] = 0
-            else:
-                data[i] = data0[i][1] / (data0[i][0] + data0[i][1])
             x.append(i * ivl_grid_x + ivl_grid_x / 2 - 1)
         return np.sqrt(mean_squared_error(data, p1(x)))
 
     # mark the trace of concentration in which the value>=0.3
-    def task_d_mark(self, data):
-        ivl_grid_y = (self.y_max - self.y_min) / self.Ny
-        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
-        # data0 is set to count and save the number of red particles and blue particles
-        data0 = np.zeros((self.Nx, self.Ny, 2))
-        # calculate the data0 of grid
-        for i in range(len(self.x_data)):
-            # to locate which grid is the new particle in and add it to data0[i]
-            for n in range(len(self.x_data[i])):
-                ivl_ys = math.ceil((self.Ny - (self.y_data[i][n] - self.y_min) / ivl_grid_y) - 1)
-                ivl_xs = math.ceil(((self.x_data[i][n] - self.x_min) / ivl_grid_x) - 1)
-                data0[ivl_ys][ivl_xs][i] += 1
-        for i in range(self.Nx):
-            for j in range(self.Ny):
-                if data0[i][j][0] + data0[i][j][1] == 0:
-                    data[i][j] = 0
-                elif data0[i][j][1] / (data0[i][j][0] + data0[i][j][1]) > 0.3:
+    def task_d(self, data):
+        data0 = self.count_grid()
+        for i in range(len(data0)):
+            for j in range(len(data0[i])):
+                if data0[i][j] > 0.3:
                     data[i][j] = 1
-        # the defination of colorbar of grid form
-        # pass in data and create the heatmap
-        sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
-        # set the layout of axis and title
-        plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
-        sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
-        sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-        plt.axis('off')
-        # show
-        plt.show()
         return data
 
     # taskE for simulation improvement
-    def task_E(self, data):
-        ivl_grid_y = (self.y_max - self.y_min) / self.Ny
-        ivl_grid_x = (self.x_max - self.x_min) / self.Nx
-        # data0 is set to count and save the number of blue particles
-        data0 = np.zeros((self.Nx, self.Ny))
-        # calculate the data0 of grid
-        for n in range(len(self.x_data[1])):
-            ivl_ys = math.ceil((self.Ny - (self.y_data[1][n] - self.y_min) / ivl_grid_y) - 1)
-            ivl_xs = math.ceil(((self.x_data[1][n] - self.x_min) / ivl_grid_x) - 1)
-            data0[ivl_ys][ivl_xs] += 1
+    def task_e(self, data):
+        x_grid = setup_grid(self.x_min, self.x_max, self.Nx)
+        y_grid = setup_grid(self.y_min, self.y_max, self.Ny)
+        blue, x_edges, y_edges = np.histogram2d(self.x_data[1], self.y_data[1], bins=[x_grid, y_grid])
         for i in range(self.Nx):
             for j in range(self.Ny):
-                # self.Np/(self.Nx*self.Ny) is the average particle quantity in each grid
-                if data0[i][j]/(self.Np/(self.Nx*self.Ny)) > 0.3:
+                # self.Np / (self.Nx * self.Ny) is the average particle quantity in each grid
+                if blue[i][j] / (self.Np / (self.Nx * self.Ny)) > 0.3:
                     data[i][j] = 1
-        # the defination of colorbar of grid form
-        # pass in data and create the heatmap
-        sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
-        # set the layout of axis and title
-        plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
-        sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
-        sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-        plt.axis('off')
-        # show
-        plt.show()
         return data
 
     # main code for this class
@@ -322,7 +240,7 @@ class TaskA:
                 self.go_a_step()
                 self.show_particle_form()
 
-        # if con == 0, means 2D problem, the visualization of grid form
+        # if con == 1, means 2D problem, the visualization of grid form
         elif self.con == 1:
             # setup the init list of particles
             self.setup()
@@ -333,7 +251,7 @@ class TaskA:
                 self.go_a_step()
                 self.show_grid()
 
-        # if con == 1, means 1D problem
+        # if con == 2, means 1D problem
         elif self.con == 2:
             for i in range(4):
                 if i < 3:
@@ -348,54 +266,78 @@ class TaskA:
                 self.show_1d_form(i)
             plt.show()
 
-        # if con == 2, means 1D error simulation
+        # if con == 3, means 1D error simulation
         elif self.con == 3:
             # import reference data
             p1 = reference_data_setup()
+            # for Np VS E simulation
             # init x and y_error for temp save
             x_type = 'Np'
             x = []
             y_error = []
-            # get globe error in different Np when h == 0.05
+            # get globe error in different Np when h == 0.005
             for i in range(18):  # the range of Np = 2 ^ i
-                self.h = 0.05  # single h
+                self.h = 0.005  # single h
                 self.Np = 2 ** i
                 x.append(self.Np)
                 # setup init list of particles
                 self.setup()
                 # cycle in Classic Euler Method step by step
-                for j in range(int(self.time_max / (2 * self.h))):
+                for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
-                y_error.append(self.root_mean_square_error(p1))
-            show_error(x, y_error, x_type)
+                y_error.append(self.count_error(p1))
+            show_error(x, np.log10(y_error), x_type)
+
+            # for h VS E simulation
             # init x and y_error for temp save
             x_type = 'h'
             x = []
             y_error = []
             # get globe error in different h when Np == 1024
-            for i in np.arange(0.0005, 0.2, 0.0005):  # the range of h
+            for i in np.arange(0.005, 0.2, 0.005):  # the range of h
                 self.Np = 1024  # single Np
                 self.h = i
-                x.append(i)
+                x.append(self.h)
                 # setup init list of particles
                 self.setup()
                 # cycle in Classic Euler Method step by step
-                for j in range(int(self.time_max / (2 * self.h))):
+                for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
-                y_error.append(self.root_mean_square_error(p1))
-            show_error(x, y_error, x_type)
+                y_error.append(self.count_error(p1))
+            show_error(x, np.log10(y_error), x_type)
 
-        # if con == 3, means TaskD
-        elif self.con == 4:
+        # if con == 4 or 5, means TaskD simulation
+        elif self.con == 4 or self.con == 5:
             # setup the init list of particles
             self.setup()
             # data is set to figure the proportion of blue particles in each grid in TaskD
             data = np.zeros((self.Nx, self.Ny))
-            data = self.task_d_mark(data)
-            for i in range(int(self.time_max / self.h)):
-                self.go_a_step()
-                data = self.task_E(data)
-                # data = self.task_d_mark(data)
+            # for normal Task D
+            if self.con == 4:
+                # get the first data
+                data = self.task_d(data)
+                # cycle in Classic Euler Method step by step
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    data = self.task_d(data)
+                show_oil(data)
+            # for Task E， we ignore the water and just run the oil
+            elif self.con == 5:
+                # delete red particles
+                self.x_data[0] = []
+                self.y_data[0] = []
+                # get the first data
+                data = self.task_e(data)
+                # cycle in Classic Euler Method step by step
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    data = self.task_e(data)
+                show_oil(data)
+
+
+def setup_grid(xy_min, xy_max, N):
+    grid_step = (xy_max - xy_min) / N
+    return np.arange(xy_min, xy_max + grid_step, grid_step)
 
 
 # setup the reference solution of 1D problem
@@ -419,18 +361,32 @@ def show_error(x, y, t):
     plt.scatter(x, y, c='blue', label='original values')
     if t == 'Np':
         # Nonlinear least squares fitting
-        popt, pcov = curve_fit(func, x, y)
+        popt, pcov = curve_fit(func, x, 10 ** y)
         a = popt[0]
         b = popt[1]
-        print('\nFit the error form E = a * Np ^ 2, where:')
+        print('\nFit the error form E = a * Np ^ b, where:')
         print('coefficient a=', a)
         print('coefficient b=', b)
         y1 = func(x, a, b)
-        plt.plot(x, y1, 'r', label='polyfit values')
+        plt.plot(x, np.log10(y1), 'r', label='polyfit values')
     plt.xlabel(t, fontsize=20)
-    plt.ylabel('E', fontsize=20)
+    plt.ylabel('lg E', fontsize=20)
     plt.legend(loc=1)
     plt.title("Root mean square error", fontname='Arial', fontsize=30, weight='bold')
+    plt.show()
+
+
+# plot the last Mark the trace(white area) diagram
+def show_oil(data):
+    # the defination of colorbar of grid form
+    # pass in data and create the heatmap
+    sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
+    # set the layout of axis and title
+    plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
+    sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
+    sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
+    plt.axis('off')
+    # show
     plt.show()
 
 
