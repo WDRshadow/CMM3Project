@@ -35,7 +35,8 @@ class GUI:
             "For 2D Problem Grid",
             "For 1D Problem",
             "For 1D Problem error simulation",
-            "For simulation in TaskD"
+            "For simulation in TaskD",
+            "For Task E simulation with out water"
         )
         self.init_condition.current(0)
         self.title.grid(row=1, column=0, padx=5, pady=5, sticky='NW')
@@ -111,7 +112,7 @@ class GUI:
             self.ymaxinp.insert(0, '1')
             self.diffinp.insert(0, '0.01')
             self.timeinp.insert(0, '0.4')
-            self.stepinp.insert(0, '0.0005')
+            self.stepinp.insert(0, '0.005')
             self.spillxinp.insert(0, '0')
             self.spillyinp.insert(0, '0')
             self.spill_radinp.insert(0, '0.3')
@@ -139,7 +140,7 @@ class GUI:
             self.ymaxinp.insert(0, '1')
             self.diffinp.insert(0, '0.1')
             self.timeinp.insert(0, '0.4')
-            self.stepinp.insert(0, '0.0005')
+            self.stepinp.insert(0, '0.005')
             self.Nxinp.insert(0, '64')
             self.Npinp.insert(0, '65536')
             self.veltype.current(0)
@@ -148,7 +149,7 @@ class GUI:
         if self.con == 3:
             self.get_val_3()
 
-        if self.con == 4:
+        if self.con == 4 or self.con == 5:
             input_var_lab = [self.timelab, self.steplab, self.Nx_lab, self.Ny_lab, self.Np_lab, self.veltype_lab]
             input_var_entries = [self.timeinp, self.stepinp, self.Nxinp, self.Nyinp, self.Npinp, self.veltype]
             for i in range(len(input_var_lab)):
@@ -159,7 +160,7 @@ class GUI:
             button.grid(row=len(input_var_lab), column=3, padx=5, pady=5, sticky='N')
             # Add in the default values so they are visible and can be edited in GUI
             self.timeinp.insert(0, '0.4')
-            self.stepinp.insert(0, '0.0005')
+            self.stepinp.insert(0, '0.005')
             self.Nxinp.insert(0, '64')
             self.Nyinp.insert(0, '64')
             self.Npinp.insert(0, '150000')
@@ -208,7 +209,7 @@ class GUI:
         self.y_max = 1
         self.D = 0.1
         self.time_max = 0.4
-        self.h = 0.0005
+        self.h = 0.005
         self.Nx = 64
         self.Np = 65536
         self.vel_type = 0
