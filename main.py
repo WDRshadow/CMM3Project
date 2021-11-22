@@ -202,7 +202,7 @@ class TaskA:
         return np.sqrt(mean_squared_error(data, p1(x)))
 
     # mark the trace of concentration in which the value>=0.3
-    def task_d_mark(self, data):
+    def task_d(self, data):
         data0 = self.count_grid()
         for i in range(len(data0)):
             for j in range(len(data0[i])):
@@ -284,16 +284,16 @@ class TaskA:
                 for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
                 y_error.append(self.count_error(p1))
-            show_error(x, y_error, x_type)
+            show_error(x, np.log10(y_error), x_type)
 
             # for h VS E simulation
             # init x and y_error for temp save
             x_type = 'h'
             x = []
             y_error = []
-            # get globe error in different h when Np == 1024
-            for i in np.arange(0.0005, 0.2, 0.0005):  # the range of h
-                self.Np = 1024  # single Np
+            # get globe error in different h when Np == 10000
+            for i in np.arange(1e-8, 1, 0.01):  # the range of h
+                self.Np = 10000  # single Np
                 self.h = i
                 x.append(self.h)
                 # setup init list of particles
@@ -302,7 +302,7 @@ class TaskA:
                 for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
                 y_error.append(self.count_error(p1))
-            show_error(x, y_error, x_type)
+            show_error(x, np.log10(y_error), x_type)
 
         # if con == 4 or 5, means TaskD simulation
         elif self.con == 4 or self.con == 5:
@@ -313,11 +313,11 @@ class TaskA:
             # for normal Task D
             if self.con == 4:
                 # get the first data
-                data = self.task_d_mark(data)
+                data = self.task_d(data)
                 # cycle in Classic Euler Method step by step
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
-                    data = self.task_d_mark(data)
+                    data = self.task_d(data)
                 show_oil(data)
             # for Task E， we ignore the water and just run the oil
             elif self.con == 5:
@@ -359,16 +359,16 @@ def show_error(x, y, t):
     plt.scatter(x, y, c='blue', label='original values')
     if t == 'Np':
         # Nonlinear least squares fitting
-        popt, pcov = curve_fit(func, x, y)
+        popt, pcov = curve_fit(func, x, 10 ** y)
         a = popt[0]
         b = popt[1]
         print('\nFit the error form E = a * Np ^ b, where:')
         print('coefficient a=', a)
         print('coefficient b=', b)
         y1 = func(x, a, b)
-        plt.plot(x, y1, 'r', label='polyfit values')
+        plt.plot(x, np.log10(y1), 'r', label='polyfit values')
     plt.xlabel(t, fontsize=20)
-    plt.ylabel('E', fontsize=20)
+    plt.ylabel('lg E', fontsize=20)
     plt.legend(loc=1)
     plt.title("Root mean square error", fontname='Arial', fontsize=30, weight='bold')
     plt.show()
