@@ -291,9 +291,9 @@ class TaskA:
             x_type = 'h'
             x = []
             y_error = []
-            # get globe error in different h when Np == 10000
+            # get globe error in different h when Np == 1024
             for i in np.arange(0.005, 0.2, 0.005):  # the range of h
-                self.Np = 10000  # single Np
+                self.Np = 1024  # single Np
                 self.h = i
                 x.append(self.h)
                 # setup init list of particles
