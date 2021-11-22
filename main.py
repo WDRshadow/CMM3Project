@@ -62,7 +62,7 @@ class TaskA:
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
-            if self.con == 0 or self.con == 1 or self.con == 4:
+            if self.con == 0 or self.con == 1 or self.con == 4 or self.con == 5:
                 if math.sqrt(math.pow(tx - self.r_x, 2) + math.pow(ty - self.r_y, 2)) < self.r:
                     self.x_data[1].append(tx)
                     self.y_data[1].append(ty)
@@ -176,7 +176,7 @@ class TaskA:
         # show
         plt.show()
 
-    # show 1D form if self.con == 1, by Ziqing and Zsolt
+    # show 1D form if self.con == 1
     def show_1d_form(self, j):
         ivl_grid_x = (self.x_max - self.x_min) / self.Nx
         # data0 is set to count and save the number of red particles and blue particles
@@ -279,7 +279,7 @@ class TaskA:
         return data
 
     # taskE for simulation improvement
-    def task_E(self, data):
+    def task_e(self, data):
         ivl_grid_y = (self.y_max - self.y_min) / self.Ny
         ivl_grid_x = (self.x_max - self.x_min) / self.Nx
         # data0 is set to count and save the number of blue particles
@@ -291,8 +291,8 @@ class TaskA:
             data0[ivl_ys][ivl_xs] += 1
         for i in range(self.Nx):
             for j in range(self.Ny):
-                # self.Np/(self.Nx*self.Ny) is the average particle quantity in each grid
-                if data0[i][j]/(self.Np/(self.Nx*self.Ny)) > 0.3:
+                # self.Np / (self.Nx * self.Ny) is the average particle quantity in each grid
+                if data0[i][j] / (self.Np / (self.Nx * self.Ny)) > 0.3:
                     data[i][j] = 1
         # the defination of colorbar of grid form
         # pass in data and create the heatmap
@@ -322,7 +322,7 @@ class TaskA:
                 self.go_a_step()
                 self.show_particle_form()
 
-        # if con == 0, means 2D problem, the visualization of grid form
+        # if con == 1, means 2D problem, the visualization of grid form
         elif self.con == 1:
             # setup the init list of particles
             self.setup()
@@ -333,7 +333,7 @@ class TaskA:
                 self.go_a_step()
                 self.show_grid()
 
-        # if con == 1, means 1D problem
+        # if con == 2, means 1D problem
         elif self.con == 2:
             for i in range(4):
                 if i < 3:
@@ -348,7 +348,7 @@ class TaskA:
                 self.show_1d_form(i)
             plt.show()
 
-        # if con == 2, means 1D error simulation
+        # if con == 3, means 1D error simulation
         elif self.con == 3:
             # import reference data
             p1 = reference_data_setup()
@@ -364,10 +364,11 @@ class TaskA:
                 # setup init list of particles
                 self.setup()
                 # cycle in Classic Euler Method step by step
-                for j in range(int(self.time_max / (2 * self.h))):
+                for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
                 y_error.append(self.root_mean_square_error(p1))
             show_error(x, y_error, x_type)
+
             # init x and y_error for temp save
             x_type = 'h'
             x = []
@@ -376,26 +377,35 @@ class TaskA:
             for i in np.arange(0.0005, 0.2, 0.0005):  # the range of h
                 self.Np = 1024  # single Np
                 self.h = i
-                x.append(i)
+                x.append(self.h)
                 # setup init list of particles
                 self.setup()
                 # cycle in Classic Euler Method step by step
-                for j in range(int(self.time_max / (2 * self.h))):
+                for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
                 y_error.append(self.root_mean_square_error(p1))
             show_error(x, y_error, x_type)
 
-        # if con == 3, means TaskD
-        elif self.con == 4:
+        # if con == 4 or 5, means TaskD simulation
+        elif self.con == 4 or self.con == 5:
             # setup the init list of particles
             self.setup()
             # data is set to figure the proportion of blue particles in each grid in TaskD
             data = np.zeros((self.Nx, self.Ny))
-            data = self.task_d_mark(data)
-            for i in range(int(self.time_max / self.h)):
-                self.go_a_step()
-                data = self.task_E(data)
-                # data = self.task_d_mark(data)
+            if self.con == 4:
+                data = self.task_d_mark(data)
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    # data = self.task_e(data)
+                    data = self.task_d_mark(data)
+            elif self.con == 5:
+                self.x_data[0] = []
+                self.y_data[0] = []
+                data = self.task_e(data)
+                for i in range(int(self.time_max / self.h)):
+                    self.go_a_step()
+                    # data = self.task_e(data)
+                    data = self.task_e(data)
 
 
 # setup the reference solution of 1D problem
@@ -422,7 +432,7 @@ def show_error(x, y, t):
         popt, pcov = curve_fit(func, x, y)
         a = popt[0]
         b = popt[1]
-        print('\nFit the error form E = a * Np ^ 2, where:')
+        print('\nFit the error form E = a * Np ^ b, where:')
         print('coefficient a=', a)
         print('coefficient b=', b)
         y1 = func(x, a, b)

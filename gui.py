@@ -35,7 +35,8 @@ class GUI:
             "For 2D Problem Grid",
             "For 1D Problem",
             "For 1D Problem error simulation",
-            "For simulation in TaskD"
+            "For simulation in TaskD",
+            "For Task E simulation with out water"
         )
         self.init_condition.current(0)
         self.title.grid(row=1, column=0, padx=5, pady=5, sticky='NW')
@@ -148,7 +149,7 @@ class GUI:
         if self.con == 3:
             self.get_val_3()
 
-        if self.con == 4:
+        if self.con == 4 or self.con == 5:
             input_var_lab = [self.timelab, self.steplab, self.Nx_lab, self.Ny_lab, self.Np_lab, self.veltype_lab]
             input_var_entries = [self.timeinp, self.stepinp, self.Nxinp, self.Nyinp, self.Npinp, self.veltype]
             for i in range(len(input_var_lab)):
