@@ -130,6 +130,8 @@ class CMM:
         im3 = plt.scatter(0, 0, s=0, c=0, cmap=cmap, norm=norm)
         fig.colorbar(im3)
         # show
+        cax = plt.gcf().axes[-1]
+        cax.axis('off')
         plt.show()
 
     # calculate the percentage of particles in each grid
@@ -156,7 +158,6 @@ class CMM:
         plt.title("Grid Form", fontname='Arial', fontsize=30, weight='bold')
         sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
         sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-        plt.axis('off')
         # show
         plt.show()
 
@@ -273,7 +274,6 @@ class CMM:
             x_type = 'Np'
             x = []
             y_error = []
-            self.h = 0.05
             # calculate global error for different Np when h == 0.005
             for i in range(18):  # the range of Np = 2 ^ i
                 self.Np = 2 ** i
@@ -379,12 +379,13 @@ def show_error(x, y, t):
 def show_oil(data):
     # the defination of colorbar of grid form
     # add data and create the heatmap
-    sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
-    # set the layout of axis and title
+    h = sns_plot = sns.heatmap(data, vmin=0, vmax=1, cbar=False, cmap=ListedColormap(["black", "white"]))
+    cb = h.figure.colorbar(h.collections[0])  # 显示colorbar
+    cax = plt.gcf().axes[-1]
+    cax.axis('off')
     plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
     sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
     sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-    plt.axis('off')
     # show
     plt.show()
 
