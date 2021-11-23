@@ -266,7 +266,6 @@ class CMM:
 
         # if con == 3 run 1D error simulation
         elif self.con == 3:
-            self.h=0.05
             # import reference data
             p1 = reference_data_setup()
             # for Np VS E simulation
@@ -274,8 +273,9 @@ class CMM:
             x_type = 'Np'
             x = []
             y_error = []
-            # calculate global error for different Np when h == 0.005
+            # calculate global error for different Np when h == 0.05
             for i in range(18):  # the range of Np = 2 ^ i
+                self.h = 0.05
                 self.Np = 2 ** i
                 x.append(self.Np)
                 # setup initial list of particles
