@@ -363,9 +363,9 @@ def show_error(x, y, t):
         popt, pcov = curve_fit(func, x, 10 ** y)
         a = popt[0]
         b = popt[1]
-        print('\nFit the error form E = a * Np ^ b, where:')
-        print('coefficient a=', a)
-        print('coefficient b=', b)
+        print('\nFit the error form E = α * Np ^ β, where:')
+        print('coefficient α=', a)
+        print('coefficient β=', b)
         y1 = func(x, a, b)
         plt.plot(x, np.log10(y1), 'r', label='polyfit values')
     plt.xlabel(t, fontsize=20)
