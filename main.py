@@ -138,10 +138,8 @@ class TaskA:
         # count the percentage by histogram2d from NumPy
         x_all = np.concatenate((self.x_data[0], self.x_data[1]))
         y_all = np.concatenate((self.y_data[0], self.y_data[1]))
-        grid_step_x = (self.x_max - self.x_min)/self.Nx
-        grid_step_y = (self.y_max - self.y_min)/self.Ny
-        x_grid = np.arange(self.x_min, self.x_max + grid_step_x, grid_step_x)
-        y_grid = np.arange(self.y_min, self.y_max + grid_step_y, grid_step_y)
+        x_grid = setup_grid(self.x_min, self.x_max, self.Nx)
+        y_grid = setup_grid(self.y_min, self.y_max, self.Ny)
         blue, x_edges, y_edges = np.histogram2d([-i for i in self.y_data[1]], self.x_data[1], bins=[x_grid, y_grid])
         all_p, x_edges, y_edges = np.histogram2d([-i for i in y_all], x_all, bins=[x_grid, y_grid])
         return np.divide(blue, all_p, out=np.zeros_like(blue), where=all_p != 0)
@@ -159,7 +157,7 @@ class TaskA:
         plt.title("Grid Form", fontname='Arial', fontsize=30, weight='bold')
         sns_plot.set_xlabel("x", fontname='Arial', fontsize=20, weight='bold')
         sns_plot.set_ylabel("y", fontname='Arial', fontsize=20, weight='bold')
-        # plt.axis('off')
+        plt.axis('off')
         # show
         plt.show()
 
@@ -216,7 +214,7 @@ class TaskA:
     def task_e(self, data):
         x_grid = setup_grid(self.x_min, self.x_max, self.Nx)
         y_grid = setup_grid(self.y_min, self.y_max, self.Ny)
-        blue, x_edges, y_edges = np.histogram2d(self.x_data[1], self.y_data[1], bins=[x_grid, y_grid])
+        blue, x_edges, y_edges = np.histogram2d([-i for i in self.y_data[1]], self.x_data[1], bins=[x_grid, y_grid])
         for i in range(self.Nx):
             for j in range(self.Ny):
                 # self.Np / (self.Nx * self.Ny) is the average particle quantity in each grid
@@ -320,7 +318,7 @@ class TaskA:
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
                     data = self.task_d(data)
-                show_oil(data)
+                    show_oil(data)
             # for Task E， we ignore the water and just run the oil
             elif self.con == 5:
                 # delete red particles
@@ -332,7 +330,7 @@ class TaskA:
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
                     data = self.task_e(data)
-                show_oil(data)
+                    show_oil(data)
 
 
 def setup_grid(xy_min, xy_max, N):
