@@ -251,7 +251,6 @@ class CMM:
 
         # if con == 2, means 1D problem
         elif self.con == 2:
-            self.h = 0.05
             for i in range(4):
                 if i < 3:
                     # setup the init list of particles for 3 runs
@@ -267,6 +266,7 @@ class CMM:
 
         # if con == 3 run 1D error simulation
         elif self.con == 3:
+            self.h=0.05
             # import reference data
             p1 = reference_data_setup()
             # for Np VS E simulation
