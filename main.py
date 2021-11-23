@@ -10,8 +10,8 @@ from scipy.optimize import curve_fit
 from gui import GUI
 
 
-# for easier setting, I put all the code into a class
-class TaskA:
+# class with main code
+class CMM:
     def __init__(self):
         # initial function, use GUI class to generate the initial values
         self.gui = GUI()
@@ -31,14 +31,13 @@ class TaskA:
         self.vel_type = self.gui.vel_type
         self.con = self.gui.con
         del self.gui
-        # for temp particle position data save
+        # saves temporary position of particles
         self.x_data = None
         self.y_data = None
-        # init velocity field data saver
+        # saves initial velocity field
         self.vel_field = np.zeros((32, 32, 2))
-        # for temp error reference data saver
 
-    # setup the velocity field
+    # velocity field setup
     def velocity_field_setup(self):
         # input the data from out side
         vel = np.loadtxt('velocityCMM3.dat')
@@ -51,13 +50,13 @@ class TaskA:
             self.vel_field[field_x][field_y][0] = vel[i][2]
             self.vel_field[field_x][field_y][1] = vel[i][3]
 
-    # this func is used to setup the particles in one traverse, built by York
+    # function to setup the particles
     def setup(self):
-        # use np.random to init the particles
+        # use np.random to initialize random particles
         self.x_data = [[], []]
         self.y_data = [[], []]
         for i in range(self.Np):
-            # temp val for a random particle
+            # temporary value for a random particle
             tx = np.random.uniform(self.x_min, self.x_max)
             ty = np.random.uniform(self.y_min, self.y_max)
             # select the color of this particle and count each color in data0
@@ -77,9 +76,9 @@ class TaskA:
                     self.x_data[0].append(tx)
                     self.y_data[0].append(ty)
 
-    # the func below is the classical Euler method, equation 6
+    # equation 6, the classical Euler method
     def ex_euler(self, Xp, u):
-        # create a gauss random dx, 'r' is random numbers with the standard Gaussian probability
+        # creates a random number 'r' using standard Gaussian probability
         r = gauss(0, 1)
         Xp += u * self.h + math.sqrt(2 * self.D) * math.sqrt(self.h) * r
         return Xp
@@ -96,7 +95,7 @@ class TaskA:
             y = 2 * self.y_max - y
         return x, y
 
-    # this func is used to update the particles after a step time, the movement of each particle is built by York,
+    # this func is used to update the particles after every step time
     def go_a_step(self):
         for i in range(len(self.x_data)):
             for n in range(len(self.x_data[i])):
@@ -111,9 +110,9 @@ class TaskA:
                 # use the boundary condition above
                 self.x_data[i][n], self.y_data[i][n] = self.bc(self.x_data[i][n], self.y_data[i][n])
 
-    # the visualization of particle form, by The Kite
+    # graph in particle form
     def show_particle_form(self):
-        # set the figure and pass in the coordinates of blue and red particles
+        # creat the graph and add the coordinates of blue and red particles
         fig = plt.figure(figsize=(10, 8))
         plt.scatter(self.x_data[1], self.y_data[1], s=1, c='b')
         plt.scatter(self.x_data[0], self.y_data[0], s=1, c='r')
@@ -133,25 +132,25 @@ class TaskA:
         # show
         plt.show()
 
-    # calculate the percentage of each grid
+    # calculate the percentage of particles in each grid
     def count_grid(self):
-        # count the percentage by histogram2d from NumPy
+        # calculated the percentage using histogram2d
         x_all = np.concatenate((self.x_data[0], self.x_data[1]))
         y_all = np.concatenate((self.y_data[0], self.y_data[1]))
         x_grid = setup_grid(self.x_min, self.x_max, self.Nx)
         y_grid = setup_grid(self.y_min, self.y_max, self.Ny)
-        blue, x_edges, y_edges = np.histogram2d([-i for i in self.y_data[1]], self.x_data[1], bins=[x_grid, y_grid])
-        all_p, x_edges, y_edges = np.histogram2d([-i for i in y_all], x_all, bins=[x_grid, y_grid])
+        blue, x_edges, y_edges = np.histogram2d([-i for i in self.y_data[1]], self.x_data[1], bins=[y_grid, x_grid])
+        all_p, x_edges, y_edges = np.histogram2d([-i for i in y_all], x_all, bins=[y_grid, x_grid])
         return np.divide(blue, all_p, out=np.zeros_like(blue), where=all_p != 0)
 
-    # the visualization of grid form, by The Kite
+    # the graph in grid form
     def show_grid(self):
-        # the defination of colorbar of grid form
+        # defintion of the colorbar for grid form
         colors1 = [(r, g, b) for (r, g, b) in zip(np.linspace(1, 0.8, 7), np.linspace(0, 0, 7), np.linspace(0, 0.9, 7))]
         colors2 = [(r, g, b) for (r, g, b) in zip(np.linspace(0.7, 0, 6), np.linspace(0, 1, 6), np.linspace(1, 0, 6))]
         colors3 = [(r, g, b) for (r, g, b) in zip(np.linspace(0, 0, 7), np.linspace(0.7, 0, 7), np.linspace(0, 1, 7))]
         colors = colors1 + colors2 + colors3
-        # pass in data and create the heatmap
+        # add data and create the heatmap
         sns_plot = sns.heatmap(self.count_grid(), vmin=0, vmax=1, cmap=colors)
         # set the layout of axis and title
         plt.title("Grid Form", fontname='Arial', fontsize=30, weight='bold')
@@ -171,15 +170,15 @@ class TaskA:
         plt.xticks([-1 + i * 0.5 for i in range(5)])
         plt.yticks([0 + i * 0.2 for i in range(6)])
         if j == 0:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid(), color='purple',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0], color='purple',
                      label='Np={},run1'.format(self.Np))
             plt.legend()
         if j == 1:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid(), color='blue',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0], color='blue',
                      label='Np={},run2'.format(self.Np))
             plt.legend()
         if j == 2:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid(), color='orange',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0], color='orange',
                      label='Np={},run3'.format(self.Np))
             plt.legend()
         if j == 3:
@@ -192,16 +191,16 @@ class TaskA:
             plt.plot(r_x, r_y, color='black', label='reference')
             plt.legend()
 
-    # to count the root mean square error
+    # to calculate the root mean square error
     def count_error(self, p1):
-        data = self.count_grid()
+        data = self.count_grid()[0]
         x = []
         ivl_grid_x = (self.x_max - self.x_min) / self.Nx
         for i in range(self.Nx):
             x.append(i * ivl_grid_x + ivl_grid_x / 2 - 1)
         return np.sqrt(mean_squared_error(data, p1(x)))
 
-    # mark the trace of concentration in which the value>=0.3
+    # mark the trace when the concentration >= 0.3
     def task_d(self, data):
         data0 = self.count_grid()
         for i in range(len(data0)):
@@ -224,38 +223,39 @@ class TaskA:
 
     # main code for this class
     def main(self):
-        # setup the velocity if vel_type = 1
+        # include the velocity if vel_type = 1
         if self.vel_type == 1:
             self.velocity_field_setup()
-        # if con == 0, means 2D problem, the visualization of particle form
+        # if con == 0, run 2D problem in particle form
         if self.con == 0:
-            # setup the init list of particles
+            # setup the initial list of particles
             self.setup()
             # show the first graph when t = 0
             self.show_particle_form()
-            # cycle in Classic Euler Method step by step
+            # loop Classic Euler Method step by step
             for i in range(int(self.time_max / self.h)):
                 self.go_a_step()
                 self.show_particle_form()
 
-        # if con == 1, means 2D problem, the visualization of grid form
+        # if con == 1, run 2D problem in grid form
         elif self.con == 1:
-            # setup the init list of particles
+            # setup the initial list of particles
             self.setup()
             # show the first graph when t = 0, data0 and data
             self.show_grid()
-            # cycle in Classic Euler Method step by step
+            # loop Classic Euler Method step by step
             for i in range(int(self.time_max / self.h)):
                 self.go_a_step()
                 self.show_grid()
 
         # if con == 2, means 1D problem
         elif self.con == 2:
+            self.h = 0.05
             for i in range(4):
                 if i < 3:
-                    # setup the init list of particles for 3 times
+                    # setup the init list of particles for 3 runs
                     self.setup()
-                    # cycle in Classic Euler Method step by step
+                    # loop Classic Euler Method step by step
                     for j in range(int(self.time_max / self.h)):
                         self.go_a_step()
                         if j * self.h == 0.2:
@@ -264,75 +264,76 @@ class TaskA:
                 self.show_1d_form(i)
             plt.show()
 
-        # if con == 3, means 1D error simulation
+        # if con == 3 run 1D error simulation
         elif self.con == 3:
             # import reference data
             p1 = reference_data_setup()
             # for Np VS E simulation
-            # init x and y_error for temp save
+            # initialize x and y_error to save temporarily
             x_type = 'Np'
             x = []
             y_error = []
-            # get globe error in different Np when h == 0.005
+            self.h = 0.05
+            # calculate global error for different Np when h == 0.005
             for i in range(18):  # the range of Np = 2 ^ i
-                self.h = 0.005  # single h
                 self.Np = 2 ** i
                 x.append(self.Np)
-                # setup init list of particles
+                # setup initial list of particles
                 self.setup()
-                # cycle in Classic Euler Method step by step
+                # loop Classic Euler Method step by step
                 for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
                 y_error.append(self.count_error(p1))
             show_error(x, np.log10(y_error), x_type)
 
             # for h VS E simulation
-            # init x and y_error for temp save
+            # initialize x and y_error to save temporarily
             x_type = 'h'
             x = []
             y_error = []
-            # get globe error in different h when Np == 1024
+            # calculate global error for different h when Np == 1024
             for i in np.arange(0.005, 0.2, 0.005):  # the range of h
                 self.Np = 1024  # single Np
                 self.h = i
                 x.append(self.h)
-                # setup init list of particles
+                # setup initial list of particles
                 self.setup()
-                # cycle in Classic Euler Method step by step
+                # loop Classic Euler Method step by step
                 for j in range(int(self.time_max / self.h)):
                     self.go_a_step()
                 y_error.append(self.count_error(p1))
             show_error(x, np.log10(y_error), x_type)
 
-        # if con == 4 or 5, means TaskD simulation
+        # if con == 4 or 5 run TaskD simulation
         elif self.con == 4 or self.con == 5:
-            # setup the init list of particles
+            # setup the initial list of particles
             self.setup()
-            # data is set to figure the proportion of blue particles in each grid in TaskD
+            # data is initialized to find the proportion of blue particles in each grid in TaskD
             data = np.zeros((self.Nx, self.Ny))
             # for normal Task D
             if self.con == 4:
                 # get the first data
                 data = self.task_d(data)
-                # cycle in Classic Euler Method step by step
+                # loop Classic Euler Method step by step
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
                     data = self.task_d(data)
                     show_oil(data)
-            # for Task E， we ignore the water and just run the oil
+            # for Task E， only simulate oil particles
             elif self.con == 5:
                 # delete red particles
                 self.x_data[0] = []
                 self.y_data[0] = []
                 # get the first data
                 data = self.task_e(data)
-                # cycle in Classic Euler Method step by step
+                # loop Classic Euler Method step by step
                 for i in range(int(self.time_max / self.h)):
                     self.go_a_step()
                     data = self.task_e(data)
                     show_oil(data)
 
 
+# setup the grid
 def setup_grid(xy_min, xy_max, N):
     grid_step = (xy_max - xy_min) / N
     return np.arange(xy_min, xy_max + grid_step, grid_step)
@@ -349,7 +350,7 @@ def reference_data_setup():
     return np.poly1d(np.polyfit(x, y, 20))
 
 
-# error form for fit
+# to find fitting constants
 def func(N, a, b):
     return a * N ** b
 
@@ -374,10 +375,10 @@ def show_error(x, y, t):
     plt.show()
 
 
-# plot the last Mark the trace(white area) diagram
+# plot the oil trace for Task D
 def show_oil(data):
     # the defination of colorbar of grid form
-    # pass in data and create the heatmap
+    # add data and create the heatmap
     sns_plot = sns.heatmap(data, vmin=0, vmax=1, cmap=ListedColormap(["black", "white"]))
     # set the layout of axis and title
     plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
@@ -391,6 +392,6 @@ def show_oil(data):
 # main code for the whole TaskA
 if __name__ == '__main__':
     # build a instance
-    cmm = TaskA()
-    # run TaskA main code
+    cmm = CMM()
+    # run CMM main code
     cmm.main()
