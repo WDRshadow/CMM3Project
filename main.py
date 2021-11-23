@@ -277,6 +277,7 @@ class CMM:
             y_error = []
             # calculate global error for different Np when h == 0.05
             for i in range(18):  # the range of Np = 2 ^ i
+                self.h = 0.05
                 self.Np = 2 ** i
                 x.append(self.Np)
                 # setup initial list of particles
