@@ -171,7 +171,8 @@ class CMM:
         plt.xticks([-1 + i * 0.5 for i in range(5)])
         plt.yticks([0 + i * 0.2 for i in range(6)])
         if j == 0:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0], color='purple',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0],
+                     color='purple',
                      label='Np={},run1'.format(self.Np))
             plt.legend()
         if j == 1:
@@ -179,7 +180,8 @@ class CMM:
                      label='Np={},run2'.format(self.Np))
             plt.legend()
         if j == 2:
-            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0], color='orange',
+            plt.plot([(i - (self.Nx / 2)) / (self.Nx / 2) for i in range(self.Nx)], self.count_grid()[0],
+                     color='orange',
                      label='Np={},run3'.format(self.Np))
             plt.legend()
         if j == 3:
@@ -275,7 +277,6 @@ class CMM:
             y_error = []
             # calculate global error for different Np when h == 0.05
             for i in range(18):  # the range of Np = 2 ^ i
-                self.h = 0.05
                 self.Np = 2 ** i
                 x.append(self.Np)
                 # setup initial list of particles
@@ -379,8 +380,7 @@ def show_error(x, y, t):
 def show_oil(data):
     # the defination of colorbar of grid form
     # add data and create the heatmap
-    h = sns_plot = sns.heatmap(data, vmin=0, vmax=1, cbar=False, cmap=ListedColormap(["black", "white"]))
-    cb = h.figure.colorbar(h.collections[0])  # 显示colorbar
+    sns_plot = sns.heatmap(data, vmin=0, vmax=1, cbar=False, cmap=ListedColormap(["black", "white"]))
     cax = plt.gcf().axes[-1]
     cax.axis('off')
     plt.title("Mark the trace(white area)", fontname='Arial', fontsize=30, weight='bold')
